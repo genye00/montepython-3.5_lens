@@ -683,7 +683,7 @@ class Likelihood_newdat(Likelihood):
         lkl = self.compute_lkl(cl, cosmo, data)
 
         # add prior on nuisance parameters
-        lkl = self.add_nuisance_prior(lkl, data)
+        # lkl = self.add_nuisance_prior(lkl, data) # do nuisance as seperate lkl, Gen Ye
 
         return lkl
 
@@ -1051,8 +1051,11 @@ class Likelihood_clik(Likelihood):
         #print("lkl:",self.clik(tot))
         lkl = self.clik(tot)[0]
 
+        # do nuisance prior seperately, by Gen Ye
+        return lkl
+
         # add prior on nuisance parameters
-        lkl = self.add_nuisance_prior(lkl, data)
+        lkl = self.add_nuisance_prior(lkl, data) 
 
         # Option added by D.C. Hooper to deal with the joint prior on ksz_norm (A_ksz in Planck notation)
         # and A_sz (A_tsz in Planck notation), of the form ksz_norm + 1.6 * A_sz (according to eq. 23 of 1907.12875).
