@@ -1,7 +1,7 @@
 # This likelihood corresponds to the Planck 2018 low_l EE simall data (only EE mode polarisation)
 
 # Grab the clik version of the lowl_EE likelihood
-Planck_lowl_EE.path_clik = os.path.join(data.path['clik'], '../../../baseline/plc_3.0/low_l/simall/simall_100x143_offlike5_EE_Aplanck_B.clik')
+Planck_lowl_EE.path_clik = os.path.join(data.path['data'], 'planck_2018/baseline/plc_3.0/low_l/simall/simall_100x143_offlike5_EE_Aplanck_B.clik')
 
 # note concerning the Planck 2018 likelihood:
 # This likelihood has a nuisance parameter A_planck that should be declared in
