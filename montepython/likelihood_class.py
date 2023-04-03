@@ -862,7 +862,7 @@ class Likelihood_clik(Likelihood):
 
         Likelihood.__init__(self, path, data, command_line)
         self.need_cosmo_arguments(
-            data, {'lensing': 'yes', 'output': 'tCl lCl pCl'})
+            data, {'output': 'tCl lCl pCl'}) # remove lensing=yes, Gen Ye
 
         try:
             import clik
