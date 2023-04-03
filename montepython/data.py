@@ -15,6 +15,7 @@ import re
 
 import io_mp  # Needs to talk to io_mp.py file for the logging
                                # of parameters
+import numpy as np
 from io_mp import dictitems,dictvalues,dictkeys
 import prior
 from scipy.optimize import fsolve
@@ -34,6 +35,8 @@ except ImportError:
             "to manually install the ordereddict package by placing" +
             "the file ordereddict.py in your Python Path")
 
+# EDE initial condition search script by Gen Ye
+from ic_search import scf_ic_finder
 
 class Data(object):
     """
@@ -113,6 +116,10 @@ class Data(object):
             find the cosmological module location.
 
         """
+
+        # initialize EDE ic search by Gen Ye
+        self.finder = scf_ic_finder()
+        self.skip = False # skip the step if ic search (shooting) failed
 
         # Initialisation of the random seed
         rd.seed()
@@ -1033,6 +1040,94 @@ class Data(object):
                 del self.cosmo_arguments[elem]
             elif elem == 'w0wa':
                 self.cosmo_arguments['wa_fld'] = self.cosmo_arguments[elem] - self.cosmo_arguments['w0_fld']
+                del self.cosmo_arguments[elem]
+            # EDE stuff by Gen Ye
+            elif elem == 'log10_axion_ac':
+                self.cosmo_arguments['scf_parameters'] = str(self.cosmo_arguments['Theta_i']) + ', 0.0'
+                self.cosmo_arguments.pop('Theta_i', None)
+            elif elem == 'fa':
+                if 'm_a' in self.cosmo_arguments:
+                    m_axi = self.cosmo_arguments['m_a']
+                elif 'lnma' in self.cosmo_arguments:
+                    m_axi = np.exp(self.cosmo_arguments['lnma'])
+                else:
+                    raise ValueError("Could not find axion mass, since none of {m_a,lnma} are defined")
+                if 'ndescf_m_fld' not in self.cosmo_arguments:
+                    self.cosmo_arguments['ndescf_m_fld'] = m_axi
+                f_axi = self.cosmo_arguments['fa']
+                axion_ini = self.cosmo_arguments['Theta_i'] * f_axi
+                self.cosmo_arguments['ndescf_parameters'] = ', '.join(map(str,[f_axi,m_axi,-1,axion_ini,0]))
+                self.cosmo_arguments.pop('Theta_i', None)
+                self.cosmo_arguments.pop('fa', None)
+                self.cosmo_arguments.pop('m_a', None)
+                self.cosmo_arguments.pop('lnma', None)
+            elif elem == 'fa1':
+                if 'm_a1' in self.cosmo_arguments:
+                    m1_axi = self.cosmo_arguments['m_a1']
+                    m2_axi = self.cosmo_arguments['m_a2']
+                elif 'lnma1' in self.cosmo_arguments:
+                    m1_axi = np.exp(self.cosmo_arguments['lnma1'])
+                    m2_axi = np.exp(self.cosmo_arguments['lnma2'])
+                else:
+                    raise ValueError("Could not find axion mass, since none of {m_a,ln(m_a)} are defined")
+                if 'ndescf_m_fld' not in self.cosmo_arguments:
+                    self.cosmo_arguments['ndescf_m_fld'] = ', '.join(map(str,[m1_axi,m2_axi]))
+                f1_axi = self.cosmo_arguments['fa1']
+                f2_axi = self.cosmo_arguments['fa2']
+                axion1_ini = self.cosmo_arguments['Theta_i'] * f1_axi
+                axion2_ini = self.cosmo_arguments['Theta_i'] * f2_axi
+                self.cosmo_arguments['ndescf_parameters'] = ', '.join(map(str,[f1_axi,m1_axi,-1,axion1_ini,0,f2_axi,m2_axi,-1,axion2_ini,0]))
+                self.cosmo_arguments['N_ndescf'] = 2
+                self.cosmo_arguments['ndescf_parameters_size'] = 5
+                self.cosmo_arguments['Omega_ndescf_stQ'] = 1
+                self.cosmo_arguments.pop('Theta_i', None)
+                self.cosmo_arguments.pop('fa1', None)
+                self.cosmo_arguments.pop('fa2', None)
+                self.cosmo_arguments.pop('m_a1', None)
+                self.cosmo_arguments.pop('m_a2', None)
+                self.cosmo_arguments.pop('lnma1', None)
+                self.cosmo_arguments.pop('lnma2', None)
+            elif elem == 'fede':
+                if not self.finder.model_set:
+                    self.finder.set_model(self.cosmo_arguments['ede_model'], self.cosmo_arguments['scf_format'])
+                    self.cosmo_arguments.pop('ede_model', None)
+                    self.cosmo_arguments.pop('scf_format', None)
+                if self.need_cosmo_update:
+                    T0 = self.cosmo_arguments['T_cmb'] if 'T_cmb' in self.cosmo_arguments else 2.7255
+                    omega_m = self.cosmo_arguments['omega_b'] + self.cosmo_arguments['omega_cdm']
+                    H0 = self.cosmo_arguments['H0'] if 'H0' in self.cosmo_arguments else 70 # H0 as derived parameter is only appropriate for phi2n potential, otherwise it is used in shooting
+                    self.finder.set_cosmo_params(omega_m=omega_m, T0=T0, H0=H0)
+                    smg0 = self.cosmo_arguments['smg0'] if 'smg0' in self.cosmo_arguments else 0
+                    smg1 = self.cosmo_arguments['smg1'] if 'smg1' in self.cosmo_arguments else 0
+                    smg2 = self.cosmo_arguments['smg2'] if 'smg2' in self.cosmo_arguments else 0
+                    v0 = self.cosmo_arguments['v0'] if 'v0' in self.cosmo_arguments else 0
+                    v1 = self.cosmo_arguments['v1'] if 'v1' in self.cosmo_arguments else 0
+                    v2 = self.cosmo_arguments['v2'] if 'v2' in self.cosmo_arguments else 0
+                    v3 = self.cosmo_arguments['v3'] if 'v3' in self.cosmo_arguments else 0
+                    self.finder.set_MCMC_params(scf_f=self.cosmo_arguments[elem], ln1plusz_c=self.cosmo_arguments['lnzc'], smg0=smg0,
+                                                smg1=smg1, smg2=smg2, v0=v0, v1=v1, v2=v2, v3=v3)
+                    rlt = self.finder.search()
+                    if rlt == 'skip':
+                        self.skip = True
+                    else:
+                        self.skip = False
+                        if self.finder.fmt == 'ede':
+                            self.cosmo_arguments['scf_parameters'] = rlt
+                        elif self.finder.fmt == 'smg':
+                            self.cosmo_arguments['parameters_smg'] = rlt
+                self.cosmo_arguments.pop(elem, None)
+                self.cosmo_arguments.pop('lnzc', None)
+                self.cosmo_arguments.pop('smg0', None)
+                self.cosmo_arguments.pop('smg1', None)
+                self.cosmo_arguments.pop('smg2', None)
+                self.cosmo_arguments.pop('v0', None)
+                self.cosmo_arguments.pop('v1', None)
+                self.cosmo_arguments.pop('v2', None)
+                self.cosmo_arguments.pop('v3', None)
+            
+            # log tensor to scalar ratio by Gen Ye 
+            elif elem == 'log_10(r)':
+                self.cosmo_arguments['r'] = 10**self.cosmo_arguments[elem]
                 del self.cosmo_arguments[elem]
 
             # Finally, deal with all the parameters ending with __i, where i is

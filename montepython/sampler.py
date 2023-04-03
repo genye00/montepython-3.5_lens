@@ -692,6 +692,11 @@ def compute_lkl(cosmo, data):
     """
     from classy import CosmoSevereError, CosmoComputationError
 
+    # skip if EDE shooting failed, by Gen Ye
+    if data.skip:
+        cosmo.struct_cleanup()
+        return data.boundary_loglike
+
     # If the cosmological module has already been called once, and if the
     # cosmological parameters have changed, then clean up, and compute.
     if cosmo.state and data.need_cosmo_update is True:
