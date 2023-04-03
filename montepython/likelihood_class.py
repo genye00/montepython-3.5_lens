@@ -409,7 +409,7 @@ class Likelihood_newdat(Likelihood):
         Likelihood.__init__(self, path, data, command_line)
 
         self.need_cosmo_arguments(
-            data, {'lensing': 'yes', 'output': 'tCl lCl pCl'})
+            data, {'output': 'tCl lCl pCl'}) # removed lensing=yes, Gen Ye
 
         # open .newdat file
         newdatfile = open(
@@ -1104,7 +1104,7 @@ class Likelihood_mock_cmb(Likelihood):
         Likelihood.__init__(self, path, data, command_line)
 
         self.need_cosmo_arguments(
-            data, {'lensing': 'yes', 'output': 'tCl lCl pCl'})
+            data, {'output': 'tCl lCl pCl'}) # remove lensing=yes, Gen Ye
 
         ################
         # Noise spectrum
