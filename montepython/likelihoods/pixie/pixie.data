@@ -1,0 +1,76 @@
+# PIXIE likelihood created by D.C. Hooper, M. Lucca and N. Schoeneberg.
+# Implementation described in 1910.04619 (general) and 2010.07814 (foregrounds).
+
+# Experimental configuration based on Chluba, Jeong 2013 (1306.5751)
+
+# Where to read/write fiducial model
+pixie.data_directory = data.path['data']
+pixie.fiducial_file = 'pixie_fiducial.dat'
+
+# Do we import noise from file?
+pixie.noise_from_file = False
+#pixie.noise_file =
+
+#######################
+## Experimental setup #
+#######################
+# Detector name, for CLASS to calculate/read PCA
+pixie.detector = 'PIXIE'
+
+# Maximum and minimum frequency (in GHz)
+pixie.detector_nu_min = 30
+pixie.detector_nu_max = 1005
+
+# For now, we have to pass bin width, soon there will be an option for numbins as well
+pixie.detector_nu_delta = 15
+#pixie.detector_bin_number = 65
+
+# Noise per bin, in W/(m^2 Hz sr). In the likelihood this will be renormalised to order unity
+pixie.detector_delta_Ic = 5
+
+##########################
+## Nuisance parameter(s) #
+##########################
+
+pixie.use_nuisance = ['sd_delta_T','sd_T_D','sd_beta_D','sd_A_D','sd_T_CIB','sd_beta_CIB',  'sd_A_CIB','sd_alpha_sync','sd_omega_sync','sd_A_sync','sd_T_e','sd_EM','sd_nu_p_spin','sd_A_spin','sd_A_CO', 'sd_y_reio_nuisance']
+
+# Temperature shift. The fiducial and the uncertainties are taken from Sec. 3.3 of Lucca et al. 2019, estimated from the COBE/FIRAS CMB temperature measurement
+pixie.sd_delta_T_prior_center         = 0.0
+pixie.sd_delta_T_prior_sigma          = 0.00022
+
+# Thermal dust. The fiducials and uncertainties are taken from Tab. 5 of Planck 2015 results X
+pixie.sd_T_D_prior_center             = 21.
+pixie.sd_T_D_prior_sigma              = 2.
+pixie.sd_beta_D_prior_center          = 1.53
+pixie.sd_beta_D_prior_sigma           = 0.05
+
+# CIB. The fiducial of 'sd_T_CIB' and 'sd_beta_CIB' as well as the amplitude are taken from Tab. 4 of Abitbol et al. 2016
+# The uncertainty of 'sd_T_CIB' and 'sd_beta_CIB' are taken from astro-ph/9803021, while the uncertainty for the amplitude
+# is assumed to be zero. (Note that in astro-ph/9803021 they use instead T_CIB=(18.5 +- 1.2) K and beta_CIB=(0.64 +- 0.12))
+pixie.sd_T_C_prior_center             = 18.8
+pixie.sd_T_C_prior_sigma              = 1.2
+pixie.sd_beta_C_prior_center          = 0.86
+pixie.sd_beta_C_prior_sigma           = 0.12
+
+# Synchrotron. The fiducial of 'sd_alpha_sync', 'sd_A_sync' and 'sd_omega_S' are taken from Tab. 4 of Abitbol et al. 2016.
+# The uncertainties of 'sd_alpha_sync' and 'sd_A_sync' are set to 10% of the fiducial, while the curvature index is fixed,
+# as done in Abitbol et al. 2016. (Compare with Mukherjee et al. 2019, where they set sd_omega_S=0)
+pixie.sd_alpha_S_prior_center         = 0.82
+pixie.sd_alpha_S_prior_sigma          = 0.082
+pixie.sd_A_S_prior_center             = 288.0
+pixie.sd_A_S_prior_sigma              = 28.8
+
+# Free-free. The fiducials and uncertainties are taken from Tab. 5 of Planck 2015 results X.
+pixie.sd_T_e_prior_center             = 7000.
+pixie.sd_T_e_prior_sigma              = 500.
+pixie.sd_EM_prior_center              = 15.
+pixie.sd_EM_prior_sigma               = 35.
+
+# Spinning dust. The fiducials and priors are taken from Tab. 5 of Planck 2015 results X
+pixie.sd_nu_p_sd_prior_center         = 19.
+pixie.sd_nu_p_sd_prior_sigma          = 1.
+
+# Reionization. The fiducial is taken from Hill et al. 2015 and the uncertainty from Dolag et al. 2015. (Only activate if
+# you want to marginalize over y_reio * Y(x) instead of using actual CLASS to do it for you using the SZ equations)
+pixie.sd_y_reio_sd_prior_center       = 1.77e-6
+pixie.sd_y_reio_sd_prior_sigma        = 1.57e-6

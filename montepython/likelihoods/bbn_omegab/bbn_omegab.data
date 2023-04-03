@@ -1,0 +1,53 @@
+## Big Bang Nucleosynthesis likelihood on (omega_b, T_cmb, N_eff)
+
+## The two main options for this lkl:
+
+# (i) include primordial element abundance "yp,dh" (default)
+# or "yp" or "dh" or "yp,dh" where yp = helium, dh =  deuterium
+bbn_omegab.include_bbn_type = "yp,dh"
+
+# (ii) get theoretical prediction from tables computed with:
+# "parthenope" = PArthENoPE v1.10 + observational d(p,g)3He rate from Adelberger et al.
+# "marcucci" = PArthENoPE v1.10 + theoretical d(p,g)3He rate from Marcucci et al.
+# "primat" = PRIMAT from Pitrou et al. 2018
+bbn_omegab.usedata = "parthenope"
+
+## The other options of this lkl:
+
+bbn_omegab.data_directory = "data/bbn"
+bbn_omegab.parthenopefile = "PArthENoPE_880.2_standard_lewis.dat"
+bbn_omegab.marcuccifile = "PArthENoPE_880.2_marcucci_lewis.dat"
+bbn_omegab.primatfile = "PRIMAT_Yp_DH_Error.dat"
+
+## Theoretical errors (2 sigma level)
+
+# on Helium, propagated from neutron lifetime
+bbn_omegab.two_sig_neutron_lifetime = 0.0006
+#two_sig_p
+# on Deuterium, propagated from Adelberger et al
+bbn_omegab.two_sig_dh_parth = 0.12
+# on Deuterium, propagated from Marcucci et al
+bbn_omegab.two_sig_dh_marcucci = 0.06
+# for "primat": errors are read in the interpolation table
+
+## Observed abundances
+
+# Experimental Deuterium fraction from Cooke et al.
+bbn_omegab.dh_cooke_mean = 2.527
+bbn_omegab.dh_cooke_one_sig = 0.030
+
+# Experimental Helium fraction from different sources: 'aver' (default),
+# 'peimbert','izotov','cooke'
+bbn_omegab.yp_measurement_type = 'aver'
+
+#https://arxiv.org/abs/1810.06561 from Cooke et al.
+bbn_omegab.yp_cooke_mean = 0.250
+bbn_omegab.yp_cooke_one_sig_p = 0.033
+bbn_omegab.yp_cooke_one_sig_m = 0.025
+# Aver et al 2015, Peimbert et al 2016
+bbn_omegab.yp_means = {'aver2015':0.2449, 'peimbert2016':0.2446, 'izotov2014':0.2551}
+bbn_omegab.yp_sigs = {'aver2015':0.0040, 'peimbert2016':0.0029, 'izotov2014':0.0022}
+
+# the tables contain Delta N_eff = N_eff - N_eff,0
+# assumed value opf N_eff,0:
+bbn_omegab.Neff0 = 3.046

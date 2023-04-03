@@ -1,0 +1,6 @@
+# this file describes the BK15 data folder
+BK15.do_nonlinear = True
+BK15.data_directory = os.path.join(data.path['data'], 'BK15')
+BK15.settings = 'BK15_dust.dataset'
+BK15.use_nuisance = ['BBdust', 'BBsync', 'BBalphadust', 'BBbetadust', 'BBalphasync', 'BBbetasync', 'BBdustsynccorr', 'BBTdust', 'Delta_dust', 'Delta_sync', 'gamma_corr', 'gamma_95', 'gamma_150', 'gamma_220', 'EEtoBB_dust', 'EEtoBB_sync']
+BK15.map_names_used = 'BK15_95_B BK15_150_B BK15_220_B W023_B P030_B W033_B P044_B P070_B P100_B P143_B P217_B P353_B'

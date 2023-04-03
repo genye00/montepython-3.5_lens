@@ -1,0 +1,68 @@
+# FIRAS likelihood created by D.C. Hooper, M. Lucca and N. Schoeneberg.
+# Implementation described in 1910.04619 (general) and 2010.07814 (foregrounds).
+
+# FIRAS noise file in CLASS folder based on Fixsen et al. (9605054)
+
+# Where to read/write fiducial model
+firas.data_directory = data.path['data']
+firas.fiducial_file = 'firas_fiducial.dat'
+
+# Do we import noise from file?
+firas.noise_from_file = True
+firas.noise_file_directory = os.path.join(data.path['cosmo'], 'external/distortions/')
+firas.noise_file_name = 'FIRAS_nu_delta_I.dat'
+
+# Detector name, for CLASS to calculate/read PCA
+firas.detector = 'FIRAS'
+
+#######################
+## Experimental setup #
+#######################
+# No further experimental set-up is needed, as the rest will be taken directly from the provided noise file
+
+##########################
+## Nuisance parameter(s) #
+##########################
+
+firas.use_nuisance = ['sd_delta_T','sd_T_D','sd_beta_D','sd_A_D','sd_T_CIB','sd_beta_CIB', 'sd_A_CIB','sd_alpha_sync','sd_omega_sync','sd_A_sync','sd_T_e','sd_EM','sd_nu_p_spin','sd_A_spin','sd_A_CO', 'sd_y_reio_nuisance']
+
+# Temperature shift. The fiducial and the uncertainties are taken from Sec. 3.3 of Lucca et al. 2019, estimated from the COBE/FIRAS CMB temperature measurement
+firas.sd_delta_T_prior_center         = 0.0
+firas.sd_delta_T_prior_sigma          = 0.00022
+
+# Thermal dust. The fiducials and uncertainties are taken from Tab. 5 of Planck 2015 results X
+firas.sd_T_D_prior_center             = 21.
+firas.sd_T_D_prior_sigma              = 2.
+firas.sd_beta_D_prior_center          = 1.53
+firas.sd_beta_D_prior_sigma           = 0.05
+
+# CIB. The fiducial of 'sd_T_CIB' and 'sd_beta_CIB' as well as the amplitude are taken from Tab. 4 of Abitbol et al. 2016
+# The uncertainty of 'sd_T_CIB' and 'sd_beta_CIB' are taken from astro-ph/9803021, while the uncertainty for the amplitude
+# is assumed to be zero. (Note that in astro-ph/9803021 they use instead T_CIB=(18.5 +- 1.2) K and beta_CIB=(0.64 +- 0.12))
+firas.sd_T_C_prior_center             = 18.8
+firas.sd_T_C_prior_sigma              = 1.2
+firas.sd_beta_C_prior_center          = 0.86
+firas.sd_beta_C_prior_sigma           = 0.12
+
+# Synchrotron. The fiducial of 'sd_alpha_sync', 'sd_A_sync' and 'sd_omega_S' are taken from Tab. 4 of Abitbol et al. 2016.
+# The uncertainties of 'sd_alpha_sync' and 'sd_A_sync' are set to 10% of the fiducial, while the curvature index is fixed,
+# as done in Abitbol et al. 2016. (Compare with Mukherjee et al. 2019, where they set sd_omega_S=0)
+firas.sd_alpha_S_prior_center         = 0.82
+firas.sd_alpha_S_prior_sigma          = 0.082
+firas.sd_A_S_prior_center             = 288.0
+firas.sd_A_S_prior_sigma              = 28.8
+
+# Free-free. The fiducials and uncertainties are taken from Tab. 5 of Planck 2015 results X.
+firas.sd_T_e_prior_center             = 7000.
+firas.sd_T_e_prior_sigma              = 500.
+firas.sd_EM_prior_center              = 15.
+firas.sd_EM_prior_sigma               = 35.
+
+# Spinning dust. The fiducials and priors are taken from Tab. 5 of Planck 2015 results X
+firas.sd_nu_p_sd_prior_center         = 19.
+firas.sd_nu_p_sd_prior_sigma          = 1.
+
+# Reionization. The fiducial is taken from Hill et al. 2015 and the uncertainty from Dolag et al. 2015. (Only activate if
+# you want to marginalize over y_reio * Y(x) instead of using actual CLASS to do it for you using the SZ equations)
+firas.sd_y_reio_sd_prior_center       = 1.77e-6
+firas.sd_y_reio_sd_prior_sigma        = 1.57e-6
