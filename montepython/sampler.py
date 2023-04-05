@@ -650,6 +650,9 @@ def accept_step(data):
     for elem in data.get_mcmc_parameters(['derived_lkl']):
         data.mcmc_parameters[elem]['last_accepted'] = \
             data.mcmc_parameters[elem]['current']
+    for elem in data.get_mcmc_parameters(['chi2']): # output chi2 by Gen Ye
+        data.mcmc_parameters[elem]['last_accepted'] = \
+            data.mcmc_parameters[elem]['current']
 
 def check_flat_bound_priors(parameters, names):
     """
@@ -701,6 +704,14 @@ def compute_lkl(cosmo, data):
     # cosmological parameters have changed, then clean up, and compute.
     if cosmo.state and data.need_cosmo_update is True:
         cosmo.struct_cleanup()
+
+    # last minute hack: if we are to do relensing, then do not need to do lensing here, by Gen Ye
+    force_relens = False
+    if data.need_lensing_update:
+        data.cosmo_arguments['lensing'] = 'no'
+    elif (data.relensflag and data.jumping_factor == 0) or (data.relensflag and not cosmo.state):
+        data.cosmo_arguments['lensing'] = 'no'
+        force_relens = True
 
     # If the data needs to change, then do a normal call to the cosmological
     # compute function. Note that, even if need_cosmo update is True, this
@@ -768,6 +779,47 @@ def compute_lkl(cosmo, data):
                 raise io_mp.CosmologicalModuleError(
                     "You interrupted execution")
 
+    from time import process_time
+    # Modify Clpp and do relensing if required. by Gen Ye
+    if data.need_lensing_update or force_relens:
+        a1 = data.mcmc_parameters['lnAL1']['current'] * data.mcmc_parameters['lnAL1']['scale']
+        a2 = data.mcmc_parameters['lnAL2']['current'] * data.mcmc_parameters['lnAL2']['scale']
+        a3 = data.mcmc_parameters['lnAL3']['current'] * data.mcmc_parameters['lnAL3']['scale']
+        a4 = data.mcmc_parameters['lnAL4']['current'] * data.mcmc_parameters['lnAL4']['scale']
+        clpp = cosmo.raw_cl()['pp']
+        al = data.gp_gen.get_func(a1,a2,a3,a4)
+        clpp *= al[:len(clpp)]
+        # add free lensing clpp as derived by Gen Ye
+        # if len(data.clpp_output_l) > 0:
+        #     for i in range(len(data.clpp_output_l)):
+        #         data.derived_lkl['AL_%d'%(i)] = al[data.clpp_output_l[i]]
+        try:
+            t0 = process_time()
+            cosmo.recompute_lensing(clpp)
+            t1 = process_time()
+            print((t1-t0))
+        except CosmoComputationError as failure_message:
+            # could be useful to uncomment for debugging:
+            #np.set_printoptions(precision=30, linewidth=150)
+            print('Relensing failed with cosmo params')
+            print(data.cosmo_arguments)
+            print('Cl_pp')
+            print(clpp)
+            sys.stderr.write(str(failure_message)+'\n')
+            sys.stderr.flush()
+            return data.boundary_loglike
+        except CosmoSevereError as critical_message:
+            print('Relensing failed with cosmo params')
+            print(data.cosmo_arguments)
+            print('Cl_pp')
+            print(clpp)
+            raise io_mp.CosmologicalModuleError(
+                "Something went wrong when calling CLASS relensing" +
+                str(critical_message))
+        except KeyboardInterrupt:
+            raise io_mp.CosmologicalModuleError(
+                "You interrupted execution")
+    
     # For each desired likelihood, compute its value against the theoretical
     # model
     loglike = 0
@@ -776,6 +828,7 @@ def compute_lkl(cosmo, data):
     # imaginary number i.
     flag_wrote_fiducial = 0
 
+    chi2output = data.get_mcmc_parameters(['chi2'])
     for likelihood in dictvalues(data.lkl):
         if likelihood.need_update is True:
             value = likelihood.loglkl(cosmo, data)
@@ -784,6 +837,8 @@ def compute_lkl(cosmo, data):
         # Otherwise, take the existing value
         else:
             value = likelihood.backup_value
+        if likelihood.name in chi2output:
+            data.mcmc_parameters[likelihood.name]['current'] = -value-value # output chi2 for each likelihoods if required by Gen Ye
         if data.command_line.display_each_chi2:
             print("-> for ",likelihood.name,":  loglkl=",value,",  chi2eff=",-2.*value)
         loglike += value
@@ -820,6 +875,16 @@ def compute_lkl(cosmo, data):
     for elem in data.get_mcmc_parameters(['derived']):
         data.mcmc_parameters[elem]['current'] /= \
             data.mcmc_parameters[elem]['scale']
+        
+    # scale derived_lkl by Gen Ye
+    for elem in data.get_mcmc_parameters(['derived_lkl']):
+        data.mcmc_parameters[elem]['current'] /= \
+            data.mcmc_parameters[elem]['scale']
+        
+    # scale chi2 by Gen Ye
+    for elem in data.get_mcmc_parameters(['chi2']):
+        data.mcmc_parameters[elem]['current'] /= \
+            data.mcmc_parameters[elem]['scale']
 
     # If fiducial files were created, inform the user, and exit
     if flag_wrote_fiducial > 0:
@@ -840,6 +905,7 @@ def compute_lkl(cosmo, data):
                 "with each other. If everything looks fine, "
                 "you may now start a new run.")
 
+    # print(data.get_mcmc_parameters(['varying']))
     return loglike/data.command_line.temperature
 
 

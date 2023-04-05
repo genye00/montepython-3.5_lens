@@ -35,9 +35,6 @@ except ImportError:
             "to manually install the ordereddict package by placing" +
             "the file ordereddict.py in your Python Path")
 
-# EDE initial condition search script by Gen Ye
-from ic_search import scf_ic_finder
-
 class Data(object):
     """
     Store all relevant data to communicate between the different modules.
@@ -116,10 +113,6 @@ class Data(object):
             find the cosmological module location.
 
         """
-
-        # initialize EDE ic search by Gen Ye
-        self.finder = scf_ic_finder()
-        self.skip = False # skip the step if ic search (shooting) failed
 
         # Initialisation of the random seed
         rd.seed()
@@ -204,6 +197,16 @@ class Data(object):
 
         # Default value for the number of steps
         self.N = 10
+
+        # initialize EDE ic search by Gen Ye
+        from ic_search import scf_ic_finder # EDE initial condition search script by Gen Ye
+        self.finder = scf_ic_finder()
+        self.skip = False # skip the step if ic search (shooting) failed
+        # relensing stuff by Gen Ye
+        self.need_lensing_update = False
+        self.relenspars = []
+        self.clpp_output_l = []
+        self.relensflag = False
 
         # Create the variable out, and out_name, which will be initialised
         # later by the :mod:`io_mp` module
@@ -344,6 +347,12 @@ class Data(object):
         :rtype: bool
         """
 
+        # gp relensing stuff by Gen Ye
+        if self.relensflag:
+            self.clpp_output_l = np.array(self.clpp_output_l)
+            from gp_lens import gp_gen
+            self.gp_gen = gp_gen(self.gphyperpars) # self.gphyperpars must be supplied in param file
+        
         # logging the parameter file (only if folder does not exist !)
         ## temporary variable for readability
         log_param = os.path.join(command_line.folder, 'log.param')
@@ -753,6 +762,7 @@ class Data(object):
         cosmo_names = self.get_mcmc_parameters(['cosmo'])
 
         need_change = 0
+        need_lensing = 0 # by Gen Ye
 
         # For all elements in the varying parameters:
         for elem in parameter_names:
@@ -761,12 +771,24 @@ class Data(object):
             if elem in cosmo_names:
                 if self.mcmc_parameters[elem]['current'] != new_step[i]:
                     need_change += 1
+            # need to redo lensing if these pars changed, but possibly not need to recompute cosmology, by Gen Ye
+            # data.relenspars need to be supplied by user in the param file
+            if elem in self.relenspars:
+                if self.mcmc_parameters[elem]['current'] != new_step[i]:
+                    need_lensing += 1
 
         # If any cosmological value was changed,
         if need_change > 0:
             self.need_cosmo_update = True
         else:
             self.need_cosmo_update = False
+
+        # if cosmo or lensing pars changed, redo lensing if required. by Gen Ye
+        # data.relensflag need to be supplied by user in the param file
+        if self.need_cosmo_update or need_lensing>0:
+            self.need_lensing_update = self.relensflag
+        else:
+            self.need_lensing_update = False
 
         for likelihood in dictvalues(self.lkl):
             # If the cosmology changed, you need to recompute the likelihood
