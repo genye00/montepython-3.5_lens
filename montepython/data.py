@@ -352,6 +352,11 @@ class Data(object):
             self.clpp_output_l = np.array(self.clpp_output_l)
             from gp_lens import gp_gen
             self.gp_gen = gp_gen(self.gphyperpars) # self.gphyperpars must be supplied in param file
+        # initialize non-class derived parameters dict
+        if self.get_mcmc_parameters(['derived_lkl']) != []:
+            self.derived_lkl = {}
+            for elem in self.get_mcmc_parameters(['derived_lkl']):
+                self.derived_lkl[elem] = 0
         
         # logging the parameter file (only if folder does not exist !)
         ## temporary variable for readability

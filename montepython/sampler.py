@@ -790,9 +790,9 @@ def compute_lkl(cosmo, data):
         al = data.gp_gen.get_func(a1,a2,a3,a4)
         clpp *= al[:len(clpp)]
         # add free lensing clpp as derived by Gen Ye
-        # if len(data.clpp_output_l) > 0:
-        #     for i in range(len(data.clpp_output_l)):
-        #         data.derived_lkl['AL_%d'%(i)] = al[data.clpp_output_l[i]]
+        if len(data.clpp_output_l) > 0:
+            for i in range(len(data.clpp_output_l)):
+                data.derived_lkl['AL_%d'%(i)] = al[data.clpp_output_l[i]]
         try:
             t0 = process_time()
             cosmo.recompute_lensing(clpp)
