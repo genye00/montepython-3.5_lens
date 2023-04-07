@@ -10,6 +10,9 @@ class Planck20_lowl_BB(Likelihood):
     def __init__(self, path, data, command_line):
         super().__init__(path, data, command_line)
 
+        if not os.path.exists(self.data_folder):
+            raise io_mp.LikelihoodError("The 'data_folder' directory does not exist. Check the given path [%s].",self.data_folder,)
+        
         # Binning (fixed binning)
         self.bins = tools.get_binning()
         print(f"lmax = {self.bins.lmax}")
