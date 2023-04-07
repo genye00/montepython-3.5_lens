@@ -1,0 +1,17 @@
+# Planck PR4 NPIPE high-l temparature and polarization likelihood (hillipop)
+# adapted from https://github.com/planck-npipe/hillipop
+
+# data path, url: https://portal.nersc.gov/cfs/cmb/planck2020/likelihoods/
+Planck20_highl_TTTE.data_folder = os.path.join(data.path['data'], 'planck_2020/hillipop')
+# files
+Planck20_highl_TTTE.multipoles_range_file = 'data/binning_ext.fits'
+Planck20_highl_TTTE.xspectra_basename = 'data/cross_NPIPE_detset'
+Planck20_highl_TTTE.covariance_matrix_file = 'data/invfll_NPIPE_detset_ext_TTTE.fits'
+
+# config
+Planck20_highl_TTTE._is_mode = {'TT': True, 'TE': True, 'EE': False}
+Planck20_highl_TTTE.foregrounds = {'TT': {'dust': 'foregrounds/DUST_planck_npipe_model','tsz': 'foregrounds/SZ_planck_npipe_model.fits','ksz': 'foregrounds/kSZ_planck_npipe_model.fits','cib': 'foregrounds/CIB_planck_npipe_model_v3','szxcib': 'foregrounds/SZxCIB_planck_npipe_model','ps_radio': None,'ps_dusty': None,'ps': None,},'EE': {'dust': 'foregrounds/DUST_planck_npipe_model'},'TE': {'dust': 'foregrounds/DUST_planck_npipe_model'}}
+
+# nuisance parameters
+Planck20_highl_TTTE.use_nuisance = ['Ad100', 'Ad143', 'Ad217', 'Ad100T', 'Ad143T', 'Ad217T', 'Ad100P', 'Ad143P', 'Ad217P', 'Aps_100x100', 'Aps_100x143', 'Aps_100x217', 'Aps_143x143', 'Aps_143x217', 'Aps_217x217', 'Aradio', 'Adusty', 'Asz', 'Acib', 'Aksz', 'Aszxcib', 'A_planck', 'cal100A', 'cal100B', 'cal143A', 'cal143B', 'cal217A', 'cal217B']
+Planck20_highl_TTTE.nuisance_priors = {'Asz': [1.0, 0.2], 'Acib': [1.0, 0.2], 'A_planck': [1.0, 0.0025], 'cal100A': [0.0, 0.002], 'cal100B': [0.0, 0.002], 'cal143B': [0.0, 0.002], 'cal217A': [0.0, 0.002], 'cal217B': [0.0, 0.002]}
