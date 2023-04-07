@@ -359,9 +359,10 @@ class Planck20_highl_TTTEEE(Likelihood):
         
         chi2 = self.compute_chi2(dlth, nuisance_pars)
 
-        for par in self.nuisance_priors:
-            mean = self.nuisance_priors[par][0]
-            sgm = self.nuisance_priors[par][1]
-            chi2 += ((nuisance_pars[par] - mean)/sgm)**2
+        for par in self.use_nuisance:
+            if par in self.nuisance_priors:
+                mean = self.nuisance_priors[par][0]
+                sgm = self.nuisance_priors[par][1]
+                chi2 += ((nuisance_pars[par] - mean)/sgm)**2
 
         return -0.5*chi2

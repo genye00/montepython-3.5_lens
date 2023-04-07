@@ -350,12 +350,19 @@ class Planck20_highl_TT(Likelihood):
             nuisance_pars['Ad143T'] = nuisance_pars['Ad143']
         if 'Ad217T' in nuisance_pars:
             nuisance_pars['Ad217T'] = nuisance_pars['Ad217']
+        if 'Ad100P' in nuisance_pars:
+            nuisance_pars['Ad100P'] = nuisance_pars['Ad100']
+        if 'Ad143P' in nuisance_pars:
+            nuisance_pars['Ad143P'] = nuisance_pars['Ad143']
+        if 'Ad217P' in nuisance_pars:
+            nuisance_pars['Ad217P'] = nuisance_pars['Ad217']
         
         chi2 = self.compute_chi2(dlth, nuisance_pars)
 
-        for par in self.nuisance_priors:
-            mean = self.nuisance_priors[par][0]
-            sgm = self.nuisance_priors[par][1]
-            chi2 += ((nuisance_pars[par] - mean)/sgm)**2
+        for par in self.use_nuisance:
+            if par in self.nuisance_priors:
+                mean = self.nuisance_priors[par][0]
+                sgm = self.nuisance_priors[par][1]
+                chi2 += ((nuisance_pars[par] - mean)/sgm)**2
 
         return -0.5*chi2
