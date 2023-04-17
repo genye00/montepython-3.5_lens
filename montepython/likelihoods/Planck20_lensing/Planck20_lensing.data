@@ -2,33 +2,8 @@
 # https://github.com/carronj/planck_PR4_lensing
 
 # config
-Planck20_lensing.like_approx = 'gaussian'
-Planck20_lensing.fields_use = 'P'
-Planck20_lensing.fields_required =  'T E P'
-Planck20_lensing.binned = 'T'
-Planck20_lensing.nbins= 9 
-Planck20_lensing.use_min= 1 
-Planck20_lensing.use_max= 9 
-Planck20_lensing.cl_lmin = 2
-Planck20_lensing.cl_lmax = 2500
-
-Planck20_lensing.cl_hat_file = 'pp_consext8_npipe_smicaed_TiPi_jTP_pre30T_kfilt_rdn0cov_PS1_bandpowers.dat'
-
-Planck20_lensing.bin_window_files = pp_consext8_npipe_smicaed_TiPi_jTP_pre30T_kfilt_rdn0cov_PS1_window/window%u.dat
-Planck20_lensing.bin_window_in_order = 'PP'
-Planck20_lensing.bin_window_out_order = 'PP'
-
-Planck20_lensing.covmat_cl = 'PP'
-Planck20_lensing.covmat_fiducial = 'pp_consext8_npipe_smicaed_TiPi_jTP_pre30T_kfilt_rdn0cov_PS1_cov.dat'
-
-Planck20_lensing.linear_correction_fiducial_file = 'pp_consext8_npipe_smicaed_TiPi_jTP_pre30T_kfilt_rdn0cov_PS1_lensing_fiducial_correction.dat'
-Planck20_lensing.linear_correction_bin_window_files = pp_consext8_npipe_smicaed_TiPi_jTP_pre30T_kfilt_rdn0cov_PS1_lens_delta_window/window%u.dat
-Planck20_lensing.linear_correction_bin_window_in_order = 'TT EE TE PP'
-Planck20_lensing.linear_correction_bin_window_out_order =  'PP PP PP PP'
-
-Planck20_lensing.calibration_param = planck_calib.paramnames
+Planck20_lensing.dataset_file = '/data2/data/planck_lensing_pr4/pp_consext8_npipe_smicaed_TiPi_jTP_pre30T_kfilt_rdn0cov_PS1.dataset'
 
 # nuisance
 Planck20_lensing.use_nuisance = ['A_planck']
-# Planck20_lensing.nuisance_priors = {'A_planck': [1.0, 0.0025]}
 

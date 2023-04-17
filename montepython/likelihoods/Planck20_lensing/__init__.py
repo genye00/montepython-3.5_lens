@@ -1,6 +1,5 @@
-from montepython.likelihood_class import Likelihood
+from montepython.likelihood_class import Likelihood_cmblikes
 
 
-class Planck20_lensing(Likelihood):
-    def __init__(self, path, data, command_line):
-        super().__init__(path, data, command_line)
+class Planck20_lensing(Likelihood_cmblikes):
+    pass

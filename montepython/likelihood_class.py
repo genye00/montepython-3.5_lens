@@ -21,6 +21,7 @@ import scipy.interpolate
 import scipy.misc
 
 from getdist import IniFile, ParamNames
+from typing import List
 from scipy.linalg import sqrtm
 
 import io_mp
@@ -247,10 +248,10 @@ class Likelihood(object):
             Desired precision for some cosmological parameters
 
         """
-        array_flag = False
-        num_flag = True
 
         for key, value in dictitems(dictionary):
+            array_flag = False
+            num_flag = True
             try:
                 data.cosmo_arguments[key]
                 try:
@@ -275,7 +276,7 @@ class Likelihood(object):
                     #print(data.cosmo_arguments[key])
                 except TypeError:
                     array_flag = True
-
+            
             if num_flag is True:
                 if array_flag is False:
                     if float(data.cosmo_arguments[key]) < value:
@@ -3077,15 +3078,9 @@ class Likelihood_cmblikes(Likelihood):
             data_file = self.dataset_file
             self.path = os.path.dirname(data_file)
         else:
-            # If no path specified and has install options (so it installed its data as an
-            # external package), use the external packages path
-            if not self.path and self.get_install_options() and self.packages_path:
-                self.path = self.get_path(self.packages_path)
-            self.path = self.path or self.get_class_path()
-            if not self.path:
-                raise io_mp.LikelihoodError("No path given for %s."%(self.dataset_file))
+            raise io_mp.LikelihoodError("No path given for %s."%(self.dataset_file))
 
-            data_file = os.path.normpath(os.path.join(self.path, self.dataset_file))
+        data_file = os.path.normpath(os.path.join(self.path, self.dataset_file))
         if not os.path.exists(data_file):
             raise io_mp.LikelihoodError("The data file '%s' could not be found at '%s'. "
                           "Either you have not installed this likelihood, "
@@ -3100,14 +3095,14 @@ class Likelihood_cmblikes(Likelihood):
                           "The likelihood value will probably not be correct. "
                           "Make sure to make 'l_max'>=%d"% requested_l_max)
         self.l_max = max(requested_l_max, getattr(self, "l_max", 0) or 0)
-        self.need_cosmo_arguments(data, {'lensing': 'yes','output': 'tCl lCl pCl', 'l_max_scalars':self.l_max})
+        self.need_cosmo_arguments(data, {'lensing': 'yes', 'output': 'tCl lCl pCl', 'l_max_scalars': self.l_max})
 
     def load_dataset_file(self, filename, dataset_params=None):
         if '.dataset' not in filename:
             filename += '.dataset'
         ini = IniFile(filename)
         self.dataset_filename = filename
-        ini.params.update(self._default_dataset_params)
+        # ini.params.update(self._default_dataset_params)
         ini.params.update(dataset_params or {})
         self.init_params(ini)
 
@@ -3136,13 +3131,13 @@ class Likelihood_cmblikes(Likelihood):
         maps_use = ini.split('maps_use', [])
         if len(maps_use):
             if any(not i for i in use_theory_field):
-                self.log.warning('maps_use overrides fields_use')
+                print('maps_use overrides fields_use')
             self.use_map = [False] * len(self.map_names)
             for j, map_used in enumerate(maps_use):
                 if map_used in self.map_names:
                     self.use_map[self.map_names.index(map_used)] = True
                 else:
-                    io_mp.LikelihoodError('maps_use item not found - %s' % map_used)
+                    raise io_mp.LikelihoodError('maps_use item not found - %s' % map_used)
         else:
             self.use_map = [use_theory_field[self.map_fields[i]]
                             for i in range(len(self.map_names))]
@@ -3504,12 +3499,12 @@ class Likelihood_cmblikes(Likelihood):
     def diag_sigma(self):
         return np.sqrt(np.diag(self.full_cov))
 
-    def plot_lensing(self, column='PP', ells=None, units="muK2", ax=None):
+    def plot_lensing(self, cosmo, column='PP', ells=None, units="muK2", ax=None):
         if not np.count_nonzero(self.map_cls):
             raise io_mp.LikelihoodError("No Cl's have been computed yet. "
                           "Make sure you have evaluated the likelihood.")
         try:
-            Cl_theo = self.provider.get_Cl(ell_factor=True, units=units)
+            Cl_theo = self.get_cl(cosmo)
             Cl = Cl_theo.get(column.lower())
         except KeyError:
             raise io_mp.LikelihoodError("'%s' spectrum has not been computed." % column)
@@ -3638,7 +3633,7 @@ class Likelihood_cmblikes(Likelihood):
                     (np.trace(M) - self.nmaps - np.linalg.slogdet(M)[1]))
         
     def loglkl(self, cosmo, data):
-        dls = self.get_cl(cosmo)
+        dls = self.get_cl(cosmo, l_max=self.l_max)
         ells_factor = ((dls["ell"] + 1) * dls["ell"] / (2 * np.pi))[2:]
         for cl in dls:
             if cl not in ['pp', 'ell']:
