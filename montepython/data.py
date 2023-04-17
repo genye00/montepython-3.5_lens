@@ -798,7 +798,8 @@ class Data(object):
         for likelihood in dictvalues(self.lkl):
             # If the cosmology changed, you need to recompute the likelihood
             # anyway
-            if self.need_cosmo_update:
+            # for now recompute all lkl with lensing update, need to refine it if LSS included, by Gen
+            if self.need_cosmo_update or self.need_lensing_update:
                 likelihood.need_update = True
                 continue
             # Otherwise, check if the nuisance parameters of this likelihood
