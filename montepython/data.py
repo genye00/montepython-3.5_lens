@@ -205,7 +205,8 @@ class Data(object):
         # relensing stuff by Gen Ye
         self.need_lensing_update = False
         self.relenspars = []
-        self.clpp_output_l = []
+        self.relens_lnode = []
+        self.relens_loutput = []
         self.relensflag = False
 
         # Create the variable out, and out_name, which will be initialised
@@ -349,9 +350,10 @@ class Data(object):
 
         # gp relensing stuff by Gen Ye
         if self.relensflag:
-            self.clpp_output_l = np.array(self.clpp_output_l)
+            self.relens_loutput = np.array(self.relens_loutput)
+            self.relens_lnode = np.array(self.relens_lnode)
             from gp_lens import gp_gen
-            self.gp_gen = gp_gen(self.gphyperpars) # self.gphyperpars must be supplied in param file
+            self.gp_gen = gp_gen(self.gphyperpars, self.relens_lnode) # self.gphyperpars must be supplied in param file
         # initialize non-class derived parameters dict
         if self.get_mcmc_parameters(['derived_lkl']) != []:
             self.derived_lkl = {}

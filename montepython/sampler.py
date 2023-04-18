@@ -782,17 +782,17 @@ def compute_lkl(cosmo, data):
     from time import process_time
     # Modify Clpp and do relensing if required. by Gen Ye
     if data.need_lensing_update or force_relens:
-        a1 = data.mcmc_parameters['lnAL1']['current'] * data.mcmc_parameters['lnAL1']['scale']
-        a2 = data.mcmc_parameters['lnAL2']['current'] * data.mcmc_parameters['lnAL2']['scale']
-        a3 = data.mcmc_parameters['lnAL3']['current'] * data.mcmc_parameters['lnAL3']['scale']
-        a4 = data.mcmc_parameters['lnAL4']['current'] * data.mcmc_parameters['lnAL4']['scale']
+        lnal = np.zeros(len(data.relens_lnode))
+        for i in range(len(data.relens_lnode)):
+            nm = 'lnAL%s'%(i+1)
+            lnal[i] = data.mcmc_parameters[nm]['current']*data.mcmc_parameters[nm]['scale']
         clpp = cosmo.raw_cl()['pp']
-        al = data.gp_gen.get_func(a1,a2,a3,a4)
+        al = data.gp_gen.get_func(lnal)
         clpp *= al[:len(clpp)]
         # add free lensing clpp as derived by Gen Ye
-        if len(data.clpp_output_l) > 0:
-            for i in range(len(data.clpp_output_l)):
-                data.derived_lkl['AL_%d'%(i)] = al[data.clpp_output_l[i]]
+        if len(data.relens_loutput) > 0:
+            for i in range(len(data.relens_loutput)):
+                data.derived_lkl['AL_%d'%(i)] = al[data.relens_loutput[i]]
         try:
             t0 = process_time()
             cosmo.recompute_lensing(clpp)
