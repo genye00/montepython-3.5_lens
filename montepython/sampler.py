@@ -794,10 +794,10 @@ def compute_lkl(cosmo, data):
             for i in range(len(data.relens_loutput)):
                 data.derived_lkl['AL_%d'%(i)] = al[data.relens_loutput[i]]
         try:
-            t0 = process_time()
+            # t0 = process_time()
             cosmo.recompute_lensing(clpp)
-            t1 = process_time()
-            print((t1-t0))
+            # t1 = process_time()
+            # print((t1-t0))
         except CosmoComputationError as failure_message:
             # could be useful to uncomment for debugging:
             #np.set_printoptions(precision=30, linewidth=150)
