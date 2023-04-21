@@ -4,7 +4,7 @@
 actdr6_lensing.variant = 'act_baseline'
 
 # lkl configurations
-actdr6_lensing.lmax = 2998
+actdr6_lensing.lmax = 3500
 actdr6_lensing.mock = False
 # Number of sims used for covmat; used in Hartlap correction
 actdr6_lensing.nsims_act = 792

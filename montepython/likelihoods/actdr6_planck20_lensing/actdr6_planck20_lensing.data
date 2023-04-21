@@ -5,7 +5,7 @@
 actdr6_planck20_lensing.variant = 'actplanck_extended'
 
 # lkl configurations
-actdr6_planck20_lensing.lmax = 2998
+actdr6_planck20_lensing.lmax = 3500
 actdr6_planck20_lensing.mock = False
 # Number of sims used for covmat; used in Hartlap correction
 actdr6_planck20_lensing.nsims_act = 792
