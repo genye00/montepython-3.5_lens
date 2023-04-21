@@ -845,8 +845,15 @@ def compute_lkl(cosmo, data):
         # In case the fiducial file was written, store this information
         if value == 1j:
             flag_wrote_fiducial += 1
+    # add nuisance prior here, by Gen Ye
+    lkl_np = 0
+    for key, dat in data.nuisance_prior_to_add.items():
+        val = data.mcmc_parameters[key]['current'] * data.mcmc_parameters[key]['scale']
+        lkl_np -= 0.5 * ((val-dat[0])/dat[1])**2
     if data.command_line.display_each_chi2:
         print("-> Total:  loglkl=",loglike,",  chi2eff=",-2.*loglike)
+        print("-> for nuisance priors:  loglkl=",lkl_np,",  chi2eff=",-2.*lkl_np)
+    loglike += lkl_np
 
     # Compute the derived parameters if relevant
     if data.get_mcmc_parameters(['derived']) != []:

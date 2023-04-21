@@ -158,6 +158,9 @@ class Data(object):
         :rtype: ordereddict
         """
 
+        # nuisance priors to add to total chi2, only support gaussian prior now, by Gen Ye
+        self.nuisance_prior_to_add = {}
+
         # Arguments for PyMultiNest
         self.NS_param_names = []
         self.NS_arguments = {}

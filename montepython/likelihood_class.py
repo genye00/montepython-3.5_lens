@@ -90,6 +90,16 @@ class Likelihood(object):
             self.use_nuisance = []
             self.nuisance = []
 
+        # Take note of likelihood specific nuisance priors to be calculated in the end, avoid applying prior to the same nuisance parameter multiple times, by Gen Ye
+        try:
+            for nuisance in self.use_nuisance:
+                if nuisance in self.nuisance_priors:
+                    if (nuisance in data.nuisance_prior_to_add) and (data.nuisance_prior_to_add[nuisance] != self.nuisance_priors[nuisance]):
+                        print("/!\\ Multiple experiments specifies different priors on the nuisance parameter '%s'.\nAre you sure you want to continue?"%nuisance)
+                    data.nuisance_prior_to_add[nuisance] = self.nuisance_priors[nuisance]        
+        except AttributeError:
+            pass
+
         # If at least one is missing, raise an exception.
         if error_flag:
             raise io_mp.LikelihoodError(
@@ -383,6 +393,11 @@ class Likelihood(object):
 
         return loglkl
 
+    def need_nuisance_priors(self, data, dictionary):
+        for nuisance in dictionary:
+            if (nuisance in data.nuisance_prior_to_add) and (data.nuisance_prior_to_add[nuisance] != dictionary[nuisance]):
+                print("/!\\ Multiple experiments specifies different priors on the nuisance parameter '%s'.\nAre you sure you want to continue?"%nuisance)
+            data.nuisance_prior_to_add[nuisance] = dictionary[nuisance]
 
 ###################################
 #
