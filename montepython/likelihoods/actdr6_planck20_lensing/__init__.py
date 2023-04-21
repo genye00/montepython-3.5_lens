@@ -16,10 +16,10 @@ class actdr6_planck20_lensing(Likelihood):
         # get cl, not dl, in muK^2 units
         cls = self.get_cl(cosmo)
 
-        # convert clpp to clkk = L^2*(L+1)^2/(2pi)*clpp
+        # convert clpp to clkk = L^2*(L+1)^2/4*clpp
         ell_fac = (cls['ell']*(cls['ell'] + 1))**2*0.25
-        cls['pp'] *= ell_fac
+        clkk = cls['pp'] * ell_fac
 
-        return alike.generic_lnlike(self.data_dict,cls['ell'],cls['pp'],cls['ell'],cls['tt'],cls['ee'],cls['te'],cls['bb'])
+        return alike.generic_lnlike(self.data_dict,cls['ell'],clkk,cls['ell'],cls['tt'],cls['ee'],cls['te'],cls['bb'])
 
     
