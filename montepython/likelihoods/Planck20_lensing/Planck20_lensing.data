@@ -2,7 +2,7 @@
 # https://github.com/carronj/planck_PR4_lensing
 
 # config
-Planck20_lensing.dataset_file = '/data2/data/planck_lensing_pr4/pp_consext8_npipe_smicaed_TiPi_jTP_pre30T_kfilt_rdn0cov_PS1.dataset'
+Planck20_lensing.dataset_file = os.path.join(data.path['data'], 'planck_2020/lensing/pp_consext8_npipe_smicaed_TiPi_jTP_pre30T_kfilt_rdn0cov_PS1.dataset')
 
 # nuisance
 Planck20_lensing.use_nuisance = ['A_planck']
