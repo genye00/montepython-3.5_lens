@@ -6,7 +6,9 @@ class actdr6_planck20_lensing(Likelihood):
     def __init__(self, path, data, command_line):
         super().__init__(path, data, command_line)
 
-        self.data_dict = alike.load_data(self.variant,lens_only=self.lens_only)
+        if self.lmax<self.trim_lmax: raise ValueError(f"An lmax of at least {self.trim_lmax} is required.")
+
+        self.data_dict = alike.load_data(variant=self.variant, lens_only=self.lens_only, like_corrections=not(self.no_like_corrections), apply_hartlap=self.apply_hartlap, mock=self.mock, nsims_act=self.nsims_act,nsims_planck=self.nsims_planck, trim_lmax=self.trim_lmax, scale_cov=self.scale_cov)
 
         self.need_cosmo_arguments(data, {'lensing': 'yes', 'output': 'tCl lCl pCl', 'l_max_scalars': self.lmax})
 

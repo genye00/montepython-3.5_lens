@@ -3,8 +3,15 @@
 # available variants ['act_baseline', 'act_extended', 'actplanck_baseline', 'actplanck_extended']
 actdr6_planck20_lensing.variant = 'actplanck_baseline'
 
+# lkl configurations
+actdr6_planck20_lensing.lmax = 2998
+actdr6_planck20_lensing.mock = False
+# Number of sims used for covmat; used in Hartlap correction
+actdr6_planck20_lensing.nsims_act = 792
+actdr6_planck20_lensing.nsims_planck = 400
 # set to True only when NOT combined with any primary CMB measurement
 actdr6_planck20_lensing.lens_only = False
-
-# recommended l range
-actdr6_planck20_lensing.lmax = 4000
+actdr6_planck20_lensing.no_like_corrections = False
+actdr6_planck20_lensing.trim_lmax = 2998
+actdr6_planck20_lensing.apply_hartlap = True
+actdr6_planck20_lensing.scale_cov = None
