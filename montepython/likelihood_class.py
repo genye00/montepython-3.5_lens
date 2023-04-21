@@ -960,9 +960,9 @@ class Likelihood_clik(Likelihood):
         except:
             self.use_nuisance = []
 
-        # Add in use_nuisance all the parameters that have non-flat prior
+        # Add in use_nuisance all the nuisance parameters. No use since we now handle nuisance priors differently, by Gen Ye
         for nuisance in self.nuisance:
-            if hasattr(self, '%s_prior_center' % nuisance):
+            if nuisance not in self.use_nuisance:
                 self.use_nuisance.append(nuisance)
 
     def loglkl(self, cosmo, data):

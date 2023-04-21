@@ -4,7 +4,9 @@
 Planck_highl_TTTEEE.path_clik = os.path.join(data.path['data'], 'planck_2018/baseline/plc_3.0/hi_l/plik/plik_rd12_HM_v22b_TTTEEE.clik')
 
 # Nuisance parameters, important because it tells the sampler to recompute this lkl when any nuisance parameters changes
-Planck_highl_TTTEEE.use_nuisance = ['A_planck', 'calib_100T', 'calib_217T', 'calib_100P', 'calib_143P', 'calib_217P', 'gal545_A_100', 'gal545_A_143', 'gal545_A_143_217', 'gal545_A_217', 'galf_EE_A_100', 'galf_EE_A_100_143', 'galf_EE_A_100_217', 'galf_EE_A_143', 'galf_EE_A_143_217', 'galf_EE_A_217', 'galf_TE_A_100', 'galf_TE_A_100_143', 'galf_TE_A_100_217', 'galf_TE_A_143', 'galf_TE_A_143_217', 'galf_TE_A_217']
+Planck_highl_TTTEEE.use_nuisance = ['A_cib_217', 'cib_index', 'xi_sz_cib', 'A_sz', 'A_planck', 'calib_100T', 'calib_217T', 'calib_100P', 'calib_143P', 'calib_217P', 'gal545_A_100', 'gal545_A_143', 'gal545_A_143_217', 'gal545_A_217', 'galf_EE_A_100', 'galf_EE_A_100_143', 'galf_EE_A_100_217', 'galf_EE_A_143', 'galf_EE_A_143_217', 'galf_EE_A_217', 'galf_TE_A_100', 'galf_TE_A_100_143', 'galf_TE_A_100_217', 'galf_TE_A_143', 'galf_TE_A_143_217', 'galf_TE_A_217']
+# Nuisance Priors
+Planck_highl_TTTEEE.nuisance_priors = {'A_planck': [1.0, 0.0025], 'calib_100T': [1.0002, 0.0007], 'calib_217T': [0.99805, 0.00065], 'calib_100P': [1.021, 0.01], 'calib_143P': [0.966, 0.01], 'calib_217P': [1.04, 0.01], 'gal545_A_100': [8.6, 2.0], 'gal545_A_143': [10.6, 2.0], 'gal545_A_143_217': [23.5, 8.5], 'gal545_A_217': [91.9, 20.0], 'galf_EE_A_100': [0.055, 0.014], 'galf_EE_A_100_143': [0.04, 0.01], 'galf_EE_A_100_217': [0.094, 0.023], 'galf_EE_A_143': [0.086, 0.022], 'galf_EE_A_143_217': [0.21, 0.051], 'galf_EE_A_217': [0.7, 0.18], 'galf_TE_A_100': [0.13, 0.042], 'galf_TE_A_100_143': [0.13, 0.036], 'galf_TE_A_100_217': [0.46, 0.09], 'galf_TE_A_143': [0.207, 0.072], 'galf_TE_A_143_217': [0.69, 0.09], 'galf_TE_A_217': [1.938, 0.54]}
 
 # # List of nuisance parameters needed for high_l_TTTEEE
 # # Some complex models may require additional polarisation parameters (commented out in most cases)

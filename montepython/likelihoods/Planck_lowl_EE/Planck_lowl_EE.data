@@ -5,6 +5,7 @@ Planck_lowl_EE.path_clik = os.path.join(data.path['data'], 'planck_2018/baseline
 
 # Nuisance parameters, important because it tells the sampler to recompute this lkl when any nuisance parameters changes
 Planck_lowl_EE.use_nuisance = ['A_planck']
+Planck_lowl_EE.nuisance_priors = {'A_planck': [1.0, 0.0025]}
 
 # Usually this likelihood is used in combination with the highl likelihood,
 # which imposes a gaussian prior on this nuisance parameter.
