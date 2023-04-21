@@ -3111,7 +3111,7 @@ class Likelihood_dataset(Likelihood):
 # adapted to montepython by Gen Ye
 ###################################
 CMB_keys = ['tt', 'te', 'ee', 'bb']
-class Likelihood_cmblikes(Likelihood):
+class Likelihood_cmblikes(Likelihood_dataset):
     # Data type for aggregated chi2 (case sensitive)
     type = "CMB"
 
@@ -3119,27 +3119,7 @@ class Likelihood_cmblikes(Likelihood):
     map_separator: str = 'x'
     
     def __init__(self, path, data, command_line):
-        Likelihood.__init__(self, path, data, command_line)
-        
-        try:
-            from camb.mathutils import chi_squared as fast_chi_squared
-        except ImportError:
-            def fast_chi_squared(covinv, x):
-                return covinv.dot(x).dot(x)
-        self._fast_chi_squared = fast_chi_squared
-
-        if os.path.isabs(self.dataset_file):
-            data_file = self.dataset_file
-            self.path = os.path.dirname(data_file)
-        else:
-            raise io_mp.LikelihoodError("No path given for %s."%(self.dataset_file))
-
-        data_file = os.path.normpath(os.path.join(self.path, self.dataset_file))
-        if not os.path.exists(data_file):
-            raise io_mp.LikelihoodError("The data file '%s' could not be found at '%s'. "
-                          "Either you have not installed this likelihood, "
-                          "or have given the wrong packages installation path."%(self.dataset_file, self.path))
-        self.load_dataset_file(data_file, getattr(self, 'dataset_params', {}))
+        Likelihood_dataset.__init__(self, path, data, command_line)
 
         # l_max has to take into account the window function of the lensing
         # so we check the computed l_max ("l_max" option) is higher than the requested one
@@ -3150,15 +3130,6 @@ class Likelihood_cmblikes(Likelihood):
                           "Make sure to make 'l_max'>=%d"% requested_l_max)
         self.l_max = max(requested_l_max, getattr(self, "l_max", 0) or 0)
         self.need_cosmo_arguments(data, {'lensing': 'yes', 'output': 'tCl lCl pCl', 'l_max_scalars': self.l_max})
-
-    def load_dataset_file(self, filename, dataset_params=None):
-        if '.dataset' not in filename:
-            filename += '.dataset'
-        ini = IniFile(filename)
-        self.dataset_filename = filename
-        # ini.params.update(self._default_dataset_params)
-        ini.params.update(dataset_params or {})
-        self.init_params(ini)
 
     def init_params(self, ini):
         self.field_names = getattr(self, 'field_names', ['T', 'E', 'B', 'P'])
