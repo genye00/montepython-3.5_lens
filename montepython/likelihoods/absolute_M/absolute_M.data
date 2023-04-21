@@ -1,8 +1,10 @@
 # Prior on absolute magnitude of Pantheon supernovae
 # from D. Camarena & V. Marra (arXiv:2101.08641)
 
-absolute_M.MB = -19.2435
-absolute_M.sigma = 0.0373
+# update to results from 2112.04510
+
+absolute_M.MB = -19.253
+absolute_M.sigma = 0.027
 
 absolute_M.conflicting_experiments = ['JLA_simple', 'JLA']
 absolute_M.use_nuisance = ['M']
