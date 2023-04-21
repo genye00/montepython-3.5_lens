@@ -852,7 +852,7 @@ def compute_lkl(cosmo, data):
         lkl_np -= 0.5 * ((val-dat[0])/dat[1])**2
     if data.command_line.display_each_chi2:
         print("-> Total:  loglkl=",loglike,",  chi2eff=",-2.*loglike)
-        print("-> for nuisance priors:  loglkl=",lkl_np,",  chi2eff=",-2.*lkl_np)
+        print("-> Nuisance priors:  loglkl=",lkl_np,",  chi2eff=",-2.*lkl_np)
     loglike += lkl_np
 
     # Compute the derived parameters if relevant
