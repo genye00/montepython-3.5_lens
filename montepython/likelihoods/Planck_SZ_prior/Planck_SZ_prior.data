@@ -1,0 +1,5 @@
+# add priors to the following
+Planck_SZ_prior.use_nuisance = ['A_sz', 'ksz_norm']
+Planck_SZ_prior.SZ_center = 9.5
+Planck_SZ_prior.SZ_sigma = 3.0
+
