@@ -1,7 +1,8 @@
 # ACT DR6 lensing likelihood from https://github.com/ACTCollaboration/act_dr6_lenslike
 
 # available variants ['act_baseline', 'act_extended', 'actplanck_baseline', 'actplanck_extended']
-actdr6_planck20_lensing.variant = 'actplanck_baseline'
+# actdr6_planck20_lensing.variant = 'actplanck_baseline'
+actdr6_planck20_lensing.variant = 'actplanck_extended'
 
 # lkl configurations
 actdr6_planck20_lensing.lmax = 2998
