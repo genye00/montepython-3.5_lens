@@ -1,0 +1,5 @@
+# Values for Hubble Space Telescope
+# Updated to Riess et al. 2016 (arXiv:1604.01424)
+# updated to 2112.04510
+H0_r21.h      = 0.7304
+H0_r21.sigma  = 0.0104
