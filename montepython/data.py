@@ -662,8 +662,10 @@ class Data(object):
                     # If yes, store the number of nuisance parameters needed
                     # for this likelihood.
                     flag = True
-                    array.append(
-                        likelihood.varying_nuisance_parameters+array[-1])
+                    # add additional check for varying_nuisance > 0, otherwise no need to add a block, by Gen Ye
+                    if (likelihood.varying_nuisance_parameters > 0):
+                        array.append(
+                            likelihood.varying_nuisance_parameters+array[-1])
                     index += likelihood.varying_nuisance_parameters
                     continue
             if not flag:
