@@ -793,6 +793,7 @@ def compute_lkl(cosmo, data):
         if len(data.relens_loutput) > 0:
             for i in range(len(data.relens_loutput)):
                 data.derived_lkl['AL_%d'%(i)] = al[data.relens_loutput[i]]
+                data.derived_lkl['CL_%d'%(i)] = clpp[data.relens_loutput[i]]
         try:
             # t0 = process_time()
             cosmo.recompute_lensing(clpp)
