@@ -133,6 +133,11 @@ def log_parameter_names(data, command_line):
     if not number:
         number = data.N
 
+    if command_line.no_output:
+        if number > 1:
+            warnings.warn('You disabled chain output for number of MCMC steps N>1, are you sure you want to do that?')
+        return
+
     # If a restart set number to correspond to new chains filename
     if command_line.restart:
         number += int(
@@ -265,6 +270,10 @@ def create_output_files(command_line, data):
         changing things here.
 
     """
+    if command_line.no_output:
+        data.out = open(os.devnull, 'w')
+        data.out_name = os.devnull
+        return
     if command_line.restart is None:
         number = command_line.N
     else:

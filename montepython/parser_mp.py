@@ -578,6 +578,9 @@ def create_parser():
             file, and pass the value with flag -f <value>. A warning
             may still appear, but you can safely disregard it.
             <++>
+        <**>--no-output<**> : None
+            <++>Disable creation of chain txt files.<++> 
+            Useful e.g. when calculating bestfit chi2 with -N 1<++>
 
         For MultiNest, PolyChord and Cosmo Hammer arguments, see
         :mod:`MultiNest`, :mod:`PolyChord` and :mod:`cosmo_hammer`.
@@ -812,6 +815,9 @@ def create_parser():
     # -- parallel chains without MPI (OPTIONAL)
     runparser.add_argument('--parallel-chains', help=helpdict['parallel-chains'],
                            action='store_true')
+    # -- disable chain output
+    runparser.add_argument('--no-output', help=helpdict['no-output'],
+                           dest='no_output', action='store_true')
 
     ###############
     # MCMC restart from chain or best fit file
