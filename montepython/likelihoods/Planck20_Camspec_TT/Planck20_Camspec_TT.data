@@ -1,0 +1,6 @@
+Planck20_Camspec_TT.dataset_file = os.path.join(data.path['data'], 'planck_2020/CamSpec_NPIPE/CamSpec_NPIPE_12_6_cl.dataset')
+Planck20_Camspec_TT.use_cache = True
+Planck20_Camspec_TT.use_cl = ['143x143', '217x217', '143x217']
+Planck20_Camspec_TT.use_fg_residual_model = 0
+Planck20_Camspec_TT.use_nuisance = ['A_planck', 'cal0', 'cal2', 'amp_100', 'amp_143', 'amp_217', 'amp_143x217', 'n_100', 'n_143', 'n_217', 'n_143x217']
+Planck20_Camspec_TT.nuisance_priors = {'A_planck': [1.0, 0.0025]}
