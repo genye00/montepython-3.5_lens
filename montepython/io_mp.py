@@ -379,6 +379,7 @@ def get_tex_name(name, number=1):
         for i in range(1, len(name.split('_'))):
             temp_name += name.split('_')[i]+' '
         name = temp_name + '}'
+    number = 1/number
     if number == 1:
         name = "${0}$".format(name)
     elif number < 1000 and number > 1:
