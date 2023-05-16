@@ -3919,9 +3919,20 @@ class Likelihood_camspec(Likelihood_dataset):
 
     def init_params(self, ini, silent=False):
         spectra = np.loadtxt(ini.relativeFileName('cl_hat_file'))
-        covmat_cl = ini.split('covmat_cl')
-        self.use_cl = ini.split('use_cl', covmat_cl)
-        if ini.hasKey('use_range'):
+        if not hasattr(self, 'use_cl'):
+            covmat_cl = ini.split('covmat_cl')
+            self.use_cl = ini.split('use_cl', covmat_cl)
+        if hasattr(self, 'use_range'):
+            used_ell = self.use_range
+            if isinstance(used_ell, dict):
+                print('Using range %s' % used_ell)
+                for key, value in used_ell.items():
+                    used_ell[key] = self.range_to_ells(value)
+            else:
+                if silent:
+                    print('CamSpec using range: %s' % used_ell)
+                used_ell = self.range_to_ells(used_ell)
+        elif ini.hasKey('use_range'):
             used_ell = ini.params['use_range']
             if isinstance(used_ell, dict):
                 print('Using range %s' % used_ell)
@@ -4017,10 +4028,11 @@ class Likelihood_camspec(Likelihood_dataset):
             self.lnrat[l_min:] = np.log(self.ls[l_min:] / np.float64(pivot))
 
         import hashlib
-        cache_file = self.dataset_filename.replace('.dataset',
-                                                   '_covinv_%s.npy' % hashlib.md5(
-                                                       str(ini.params).encode(
-                                                           'utf8')).hexdigest())
+        # cache_file = self.dataset_filename.replace('.dataset',
+        #                                            '_covinv_%s.npy' % hashlib.md5(
+        #                                                str(ini.params).encode(
+        #                                                    'utf8')).hexdigest())
+        cache_file = os.path.join(self.folder, 'covinv_%s.npy' % hashlib.md5(str(ini.params).encode('utf8')).hexdigest())
         if self.use_cache and os.path.exists(cache_file):
             self.covinv = np.load(cache_file).astype(np.float64)
         else:
