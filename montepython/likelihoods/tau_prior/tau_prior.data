@@ -1,0 +1,4 @@
+# arXiv:2103.14378
+tau_prior.tau = 0.0627
+tau_prior.sigmap = 0.0050
+tau_prior.sigmam = 0.0058
