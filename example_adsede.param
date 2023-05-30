@@ -1,0 +1,244 @@
+#------Experiments to test (separated with commas)-----
+
+data.experiments=['lenssudo_al', 'lenssudo_gp', 'Planck20_Camspec_TTTEEE', 'Planck20_lowl_EE', 'Planck_lowl_TT', 'actdr6_planck20_lensing', 'BK18']
+
+#------ Settings for the over-sampling.
+# The first element will always be set to 1, for it is the sampling of the
+# cosmological parameters. The other numbers describe the over sampling of the
+# nuisance parameter space. This array must have the same dimension as the
+# number of blocks in your run (so, 1 for cosmological parameters, and then 1
+# for each experiment with varying nuisance parameters).
+# Note that when using Planck likelihoods, you definitely want to use [1, 4],
+# to oversample as much as possible the 14 nuisance parameters.
+# Remember to order manually the experiments from slowest to fastest (putting
+# Planck as the first set of experiments should be a safe bet, except if you
+# also have LSS experiments).
+# If you have experiments without nuisance, you do not need to specify an
+# additional entry in the over_sampling list (notice for instance that, out of
+# the three Planck likelihoods used, only Planck_highl requires nuisance
+# parameters, therefore over_sampling has a length of two (cosmology, plus one
+# set of nuisance).
+data.over_sampling=[1, 2, 4, 5, 2]
+
+#------ Parameter list -------
+
+# data.parameters[class name] = [mean, min, max, 1-sigma, scale, role]
+# - if min max irrelevant, put to None
+# - if fixed, put 1-sigma to 0
+# - if scale irrelevant, put to 1, otherwise to the appropriate factor
+# - role is either 'cosmo', 'nuisance' or 'derived'. You should put the derived
+# parameters at the end, and in case you are using the `-j fast` Cholesky
+# decomposition, you should order your nuisance parameters from slowest to
+# fastest.
+
+# Cosmological parameters list
+
+data.parameters['omega_b']      = [  2.2377,   None, None,      0.015, 0.01, 'cosmo']
+data.parameters['omega_cdm']    = [ 0.134,   None, None,     0.0013,    1, 'cosmo']
+data.parameters['H0']           = [    72,   None, None,        0.5,    1, 'cosmo']
+data.parameters['ln10^{10}A_s'] = [  3.0447,   None, None,      0.015,    1, 'cosmo']
+data.parameters['n_s']          = [  0.99,   None, None,     0.0042,    1, 'cosmo']
+data.parameters['tau_reio']     = [  0.0543,  0.004, None,      0.008,    1, 'cosmo']
+data.parameters['r']            = [   0.028,    0.0,  0.5,       0.02,      1, 'cosmo']
+# data.parameters['A_lisw']       = [       1,      0, None,        0.1,    1, 'cosmo']
+data.parameters['lnzc']         = [   8.24,     7.5,  9.5,         0.1,      1, 'cosmo']
+data.parameters['fede']         = [  0.108,  0.0001,  0.3,       0.007,      1, 'cosmo']
+data.parameters['v1']           = [      2,       2,    2,           0,      1, 'cosmo']
+data.parameters['v2']           = [   3.79,    3.79, 3.79,           0, 0.0001, 'cosmo']
+
+# Nuisance parameter list, same call, except the name does not have to be a class name
+
+data.parameters['lnAL1'] = [    0,     -2,   2,     0.1,     1, 'nuisance']
+data.parameters['lnAL2'] = [    0,     -2,   2,     0.1,     1, 'nuisance']
+data.parameters['lnAL3'] = [    0,     -2,   2,     0.1,     1, 'nuisance']
+
+data.parameters['gp'] = [    0,     -2,   2,     0.1,     1, 'nuisance']
+
+data.parameters['A_planck'] = [1, None, None, 0.0005, 1, 'nuisance']
+data.parameters['calEE'] = [1, None, None, 0.01, 1, 'nuisance']
+data.parameters['cal0'] = [1, 1, 1, 0, 1, 'nuisance']
+data.parameters['cal2'] = [1, 1, 1, 0, 1, 'nuisance']
+data.parameters['amp_100'] = [0, 0, 0, 0, 1, 'nuisance']
+data.parameters['amp_143'] = [10, 0, 50, 1, 1, 'nuisance']
+data.parameters['amp_217'] = [20, 0, 50, 1, 1, 'nuisance']
+data.parameters['amp_143x217'] = [10, 0, 50, 1, 1, 'nuisance']
+data.parameters['n_100'] = [1, 1, 1, 0, 1, 'nuisance']
+data.parameters['n_143'] = [1, 0, 5, 0.2, 1, 'nuisance']
+data.parameters['n_217'] = [1, 0, 5, 0.2, 1, 'nuisance']
+data.parameters['n_143x217'] = [1, 0, 5, 0.2, 1, 'nuisance']
+data.parameters['calTE'] = [1, None, None, 0.01, 1, 'nuisance']
+
+# dust power at ell=80, nu=353 GHz [uK^2]
+data.parameters['BBdust']            = [      3.,    0.,   15.,        0.1,     1, 'nuisance']
+# sync power at ell=80, nu=23 GHz [uK^2]
+data.parameters['BBsync']            = [      1.,    0.,   50.,         1.,     1, 'nuisance']
+# dust spatial power spectrum power law index
+data.parameters['BBalphadust']       = [   -0.42,  -1.0,    0.,       0.01,     1, 'nuisance']
+# dust SED power law index, for use with Planck relax prior and set bound [0.80, 2.40]
+#data.parameters['BBbetadust']        = [    1.59,  1.04,  2.14,       0.02,     1, 'nuisance']
+data.parameters['BBbetadust']        = [    1.59,   0.8,    2.4,       0.02,     1, 'nuisance']
+# dust blackbody temperature [K] -- fixed / very insensitive to this
+data.parameters['BBTdust']           = [    19.6,  19.6,  19.6,        0.0,     1, 'nuisance']
+# sync spatial power specturm power law index
+data.parameters['BBalphasync']       = [    -0.6,  -1.0,    0.,       0.01,     1, 'nuisance']
+# sync SED power law index
+data.parameters['BBbetasync']        = [    -3.1,  -4.5,  -2.0,       0.02,     1, 'nuisance']
+# correlation between dust and sync
+# NOTE: For BK15 analysis, we are allowing this parameter to range 
+#       from -1 to 1 (allowed range was 0 to 1 for BK14).
+data.parameters['BBdustsynccorr']    = [     0.2,  -1.0,   1.0,       0.01,     1, 'nuisance']
+# dust/sync correlation ratio between 217 and 353 GHz, ell=80, fixed to 1.0 = no decorrelation
+data.parameters['Delta_dust']       = [     1.0,   1.0,   1.0,          0,     1, 'nuisance']
+data.parameters['Delta_sync']       = [     1.0,   1.0,   1.0,          0,     1, 'nuisance']
+# EE/BB ratios -- fixed / only used if E-modes are turned on
+data.parameters['EEtoBB_dust']       = [     2.0,   2.0,   2.0,          0,     1, 'nuisance']
+data.parameters['EEtoBB_sync']       = [     2.0,   2.0,   2.0,          0,     1, 'nuisance']
+# Band center errors, fixed to zero
+data.parameters['gamma_corr']        = [     0.0,   0.0,   0.0,          0,     1, 'nuisance']
+data.parameters['gamma_95']          = [     0.0,   0.0,   0.0,          0,     1, 'nuisance']
+data.parameters['gamma_150']         = [     0.0,   0.0,   0.0,          0,     1, 'nuisance']
+data.parameters['gamma_220']         = [     0.0,   0.0,   0.0,          0,     1, 'nuisance']
+
+
+# Output per experiment chi2
+data.parameters['Planck20_Camspec_TTTEEE']              = [0, None, None, 0,     1,   'chi2']
+data.parameters['Planck20_lowl_EE']                   = [0, None, None, 0,     1,   'chi2']
+data.parameters['Planck_lowl_TT']                     = [0, None, None, 0,     1,   'chi2']
+data.parameters['actdr6_planck20_lensing']            = [0, None, None, 0,     1,   'chi2']
+data.parameters['BK18']            = [0, None, None, 0,     1,   'chi2']
+
+# Derived parameters
+
+# data.parameters['z_reio']          = [1, None, None, 0,     1,   'derived']
+data.parameters['Omega_Lambda']    = [1, None, None, 0,     1,   'derived']
+data.parameters['YHe']             = [1, None, None, 0,     1,   'derived']
+data.parameters['100*theta_s']     = [0, None, None, 0,     1,   'derived']
+data.parameters['A_s']             = [0, None, None, 0,  1e-9,   'derived']
+data.parameters['sigma8']          = [0, None, None, 0,     1,   'derived']
+data.parameters['Omega_m']          = [0, None, None, 0,     1,   'derived']
+# free lensing clpp
+data.parameters['AL_0'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['AL_1'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['AL_2'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['AL_3'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['AL_4'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['AL_5'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['AL_6'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['AL_7'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['AL_8'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['AL_9'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['AL_10'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['AL_11'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['AL_12'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['AL_13'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['AL_14'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['AL_15'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['AL_16'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['AL_17'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['AL_18'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['AL_19'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['AL_20'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['AL_21'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['AL_22'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['AL_23'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['AL_24'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['AL_25'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['AL_26'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['AL_27'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['AL_28'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['AL_29'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['AL_30'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['AL_31'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['AL_32'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['AL_33'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['AL_34'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['AL_35'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['AL_36'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['AL_37'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['AL_38'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['AL_39'] = [0, None, None, 0,     1,   'derived_lkl']
+
+data.parameters['CL_0'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['CL_1'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['CL_2'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['CL_3'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['CL_4'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['CL_5'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['CL_6'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['CL_7'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['CL_8'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['CL_9'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['CL_10'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['CL_11'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['CL_12'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['CL_13'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['CL_14'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['CL_15'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['CL_16'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['CL_17'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['CL_18'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['CL_19'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['CL_20'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['CL_21'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['CL_22'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['CL_23'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['CL_24'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['CL_25'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['CL_26'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['CL_27'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['CL_28'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['CL_29'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['CL_30'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['CL_31'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['CL_32'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['CL_33'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['CL_34'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['CL_35'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['CL_36'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['CL_37'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['CL_38'] = [0, None, None, 0,     1,   'derived_lkl']
+data.parameters['CL_39'] = [0, None, None, 0,     1,   'derived_lkl']
+
+# Other cosmo parameters (fixed parameters, precision parameters, etc.)
+
+data.cosmo_arguments['sBBN file'] = data.path['cosmo']+'/bbn/sBBN.dat'
+data.cosmo_arguments['k_pivot'] = 0.05
+data.cosmo_arguments['n_t'] = 0
+data.cosmo_arguments['alpha_t'] = 0
+
+# EDE parameters
+data.cosmo_arguments['Omega_scf'] = 0
+data.cosmo_arguments['attractor_ic_scf'] = 'no'
+data.cosmo_arguments['force_ede'] = 'Yes'
+data.cosmo_arguments['ede_model'] = 'phi2n_ads'
+data.cosmo_arguments['scf_format'] = 'ede'
+
+# The base model features two massless
+# and one massive neutrino with m=0.06eV.
+# The settings below ensures that Neff=3.044
+# and m/omega = 93.14 eV
+data.cosmo_arguments['N_ur'] = 2.0308
+data.cosmo_arguments['N_ncdm'] = 1
+data.cosmo_arguments['m_ncdm'] = 0.06
+data.cosmo_arguments['T_ncdm'] = 0.71611
+
+# These two are required to get sigma8 as a derived parameter
+# (class must compute the P(k) until sufficient k)
+data.cosmo_arguments['output'] = 'mPk'
+data.cosmo_arguments['P_k_max_h/Mpc'] = 1.
+
+data.cosmo_arguments['l_max_scalars'] = 3008
+
+
+#------ Mcmc parameters ----
+
+data.N=10
+data.write_step = 5
+data.relensflag = True
+data.relenspars = ['lnAL1', 'lnAL2', 'lnAL3', 'gp']
+# l values corresponds to lnAL1,2,3
+data.relens_lnode = [50, 200, 800]
+# GP kernel parameters [sigma^2, l^2]
+data.gphyperpars = [0.01, 1]
+# output l
+data.relens_loutput = [10, 11, 12, 14, 16, 19, 21, 24, 27, 31, 36, 41, 46, 53, 60, 68, 78, 88, 100, 114, 130, 148, 168, 191, 218, 248, 282, 320, 364, 415, 471, 536, 610, 693, 788, 897, 1020, 1159, 1318, 1499]
