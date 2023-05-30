@@ -1,0 +1,16 @@
+# this file describes the BK18 data folder
+BK18.do_nonlinear = True
+BK18.data_directory = os.path.join(data.path['data'], 'bicep_keck_2018/BK18_cosmomc/data/BK18lf_dust')
+BK18.settings = 'BK18lf_dust.dataset'
+BK18.use_nuisance = ['BBdust', 'BBsync', 'BBalphadust', 'BBbetadust', 'BBalphasync', 'BBbetasync', 'BBdustsynccorr', 'BBTdust', 'Delta_dust', 'Delta_sync', 'gamma_corr', 'gamma_95', 'gamma_150', 'gamma_220', 'EEtoBB_dust', 'EEtoBB_sync']
+BK18.map_names_used = 'BK18_K95_B BK18_150_B BK18_220_B BK18_B95e_B W023e_B P030e_B W033e_B P044e_B P143e_B P217e_B P353e_B'
+# BK18.nuisance_priors = {'BBbetadust':[1.59,0.11], 'BBbetasync':[-3.1,0.3]}
+# for use with Planck18, relax beta_d prior
+BK18.nuisance_priors = {'BBbetasync':[-3.1,0.3]}
+
+# recommended precision k_max_tau0_over_l_max=7.0, accurate_lensing=1
+BK18.k_max_tau0_over_l_max = 3.0
+BK18.accurate_lensing = 1
+
+# bins to use, inclusive on both sides, e.g. [1,3] means bin1 bin2 bin3
+BK18.use_bins = [1,9]

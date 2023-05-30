@@ -1,11 +1,12 @@
 # This likelihood corresponds to the Planck 2018 lensing data
 
 # Grab the clik version of the Planck 2018 lensing likelihood
-Planck_lensing.path_clik = os.path.join(data.path['clik'], '../../../baseline/plc_3.0/lensing/smicadx12_Dec5_ftl_mv2_ndclpp_p_teb_consext8.clik_lensing')
+Planck_lensing.path_clik = os.path.join(data.path['data'], 'planck_2018/baseline/plc_3.0/lensing/smicadx12_Dec5_ftl_mv2_ndclpp_p_teb_consext8.clik_lensing')
 
-# note concerning the Planck 2018 likelihood:
-# This likelihood has a nuisance parameter A_planck that should be declared in
-# your input parameter file.
+# Nuisance parameters, important because it tells the sampler to recompute this lkl when any nuisance parameters changes
+Planck_lensing.use_nuisance = ['A_planck']
+Planck_lensing.nuisance_priors = {'A_planck': [1.0, 0.0025]}
+
 # Usually this likelihood is used in combination with the highl likelihood,
 # which imposes a gaussian prior on this nuisance parameter.
 # If you run this likelihood alone (without any highl one), you need to

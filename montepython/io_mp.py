@@ -133,6 +133,11 @@ def log_parameter_names(data, command_line):
     if not number:
         number = data.N
 
+    if command_line.no_output:
+        if number > 1:
+            warnings.warn('You disabled chain output for number of MCMC steps N>1, are you sure you want to do that?')
+        return
+
     # If a restart set number to correspond to new chains filename
     if command_line.restart:
         number += int(
@@ -147,6 +152,9 @@ def log_parameter_names(data, command_line):
         param.append(elem)
     # New type of parameter, derived_lkl: this is a derived parameter calculated in the likelihood, and not known to CLASS. Added by D. C. Hooper
     for elem in data.get_mcmc_parameters(['derived_lkl']):
+        param.append(elem)
+    # Chi2 of per experiment by Gen Ye
+    for elem in data.get_mcmc_parameters(['chi2']):
         param.append(elem)
     for name in param:
         # Use get_tex_name to convert parameter name to tex name
@@ -177,6 +185,9 @@ def print_parameters(out, data):
         param.append(elem)
     # New type of parameter, derived_lkl: this is a derived parameter calculated in the likelihood, and not known to CLASS. Added by D. C. Hooper
     for elem in data.get_mcmc_parameters(['derived_lkl']):
+        param.append(elem)
+    # Chi2 of per experiment by Gen Ye
+    for elem in data.get_mcmc_parameters(['chi2']):
         param.append(elem)
     out.write('\n#  -LogLkl\t')
     for i in range(len(param)):
@@ -228,6 +239,9 @@ def print_vector(out, N, loglkl, data):
         for elem in data.get_mcmc_parameters(['derived_lkl']):
             out[j].write('%.6e\t' %
                          data.mcmc_parameters[elem]['last_accepted'])
+        for elem in data.get_mcmc_parameters(['chi2']): # output chi2 by Gen Ye
+            out[j].write('%.6e\t' %
+                         data.mcmc_parameters[elem]['last_accepted'])
         out[j].write('\n')
 
 
@@ -256,6 +270,10 @@ def create_output_files(command_line, data):
         changing things here.
 
     """
+    if command_line.no_output:
+        data.out = open(os.devnull, 'w')
+        data.out_name = os.devnull
+        return
     if command_line.restart is None:
         number = command_line.N
     else:
@@ -361,6 +379,7 @@ def get_tex_name(name, number=1):
         for i in range(1, len(name.split('_'))):
             temp_name += name.split('_')[i]+' '
         name = temp_name + '}'
+    number = 1/number
     if number == 1:
         name = "${0}$".format(name)
     elif number < 1000 and number > 1:

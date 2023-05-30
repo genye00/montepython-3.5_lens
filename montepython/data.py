@@ -15,6 +15,7 @@ import re
 
 import io_mp  # Needs to talk to io_mp.py file for the logging
                                # of parameters
+import numpy as np
 from io_mp import dictitems,dictvalues,dictkeys
 import prior
 from scipy.optimize import fsolve
@@ -33,7 +34,6 @@ except ImportError:
             "If you are running with Python v2.5 or 2.6, you need" +
             "to manually install the ordereddict package by placing" +
             "the file ordereddict.py in your Python Path")
-
 
 class Data(object):
     """
@@ -158,6 +158,9 @@ class Data(object):
         :rtype: ordereddict
         """
 
+        # nuisance priors to add to total chi2, only support gaussian prior now, by Gen Ye
+        self.nuisance_prior_to_add = {}
+
         # Arguments for PyMultiNest
         self.NS_param_names = []
         self.NS_arguments = {}
@@ -197,6 +200,17 @@ class Data(object):
 
         # Default value for the number of steps
         self.N = 10
+
+        # initialize EDE ic search by Gen Ye
+        from ic_search import scf_ic_finder # EDE initial condition search script by Gen Ye
+        self.finder = scf_ic_finder()
+        self.skip = False # skip the step if ic search (shooting) failed
+        # relensing stuff by Gen Ye
+        self.need_lensing_update = False
+        self.relenspars = []
+        self.relens_lnode = []
+        self.relens_loutput = []
+        self.relensflag = False
 
         # Create the variable out, and out_name, which will be initialised
         # later by the :mod:`io_mp` module
@@ -337,6 +351,18 @@ class Data(object):
         :rtype: bool
         """
 
+        # gp relensing stuff by Gen Ye
+        if self.relensflag:
+            self.relens_loutput = np.array(self.relens_loutput)
+            self.relens_lnode = np.array(self.relens_lnode)
+            from gp_lens import gp_gen
+            self.gp_gen = gp_gen(self.gphyperpars, self.relens_lnode) # self.gphyperpars must be supplied in param file
+        # initialize non-class derived parameters dict
+        if self.get_mcmc_parameters(['derived_lkl']) != []:
+            self.derived_lkl = {}
+            for elem in self.get_mcmc_parameters(['derived_lkl']):
+                self.derived_lkl[elem] = 0
+        
         # logging the parameter file (only if folder does not exist !)
         ## temporary variable for readability
         log_param = os.path.join(command_line.folder, 'log.param')
@@ -636,8 +662,10 @@ class Data(object):
                     # If yes, store the number of nuisance parameters needed
                     # for this likelihood.
                     flag = True
-                    array.append(
-                        likelihood.varying_nuisance_parameters+array[-1])
+                    # add additional check for varying_nuisance > 0, otherwise no need to add a block, by Gen Ye
+                    if (likelihood.varying_nuisance_parameters > 0):
+                        array.append(
+                            likelihood.varying_nuisance_parameters+array[-1])
                     index += likelihood.varying_nuisance_parameters
                     continue
             if not flag:
@@ -746,6 +774,7 @@ class Data(object):
         cosmo_names = self.get_mcmc_parameters(['cosmo'])
 
         need_change = 0
+        need_lensing = 0 # by Gen Ye
 
         # For all elements in the varying parameters:
         for elem in parameter_names:
@@ -754,6 +783,11 @@ class Data(object):
             if elem in cosmo_names:
                 if self.mcmc_parameters[elem]['current'] != new_step[i]:
                     need_change += 1
+            # need to redo lensing if these pars changed, but possibly not need to recompute cosmology, by Gen Ye
+            # data.relenspars need to be supplied by user in the param file
+            if elem in self.relenspars:
+                if self.mcmc_parameters[elem]['current'] != new_step[i]:
+                    need_lensing += 1
 
         # If any cosmological value was changed,
         if need_change > 0:
@@ -761,10 +795,18 @@ class Data(object):
         else:
             self.need_cosmo_update = False
 
+        # if cosmo or lensing pars changed, redo lensing if required. by Gen Ye
+        # data.relensflag need to be supplied by user in the param file
+        if self.need_cosmo_update or need_lensing>0:
+            self.need_lensing_update = self.relensflag
+        else:
+            self.need_lensing_update = False
+
         for likelihood in dictvalues(self.lkl):
             # If the cosmology changed, you need to recompute the likelihood
             # anyway
-            if self.need_cosmo_update:
+            # for now recompute all lkl with lensing update, need to refine it if LSS included, by Gen
+            if self.need_cosmo_update or self.need_lensing_update:
                 likelihood.need_update = True
                 continue
             # Otherwise, check if the nuisance parameters of this likelihood
@@ -1033,6 +1075,94 @@ class Data(object):
                 del self.cosmo_arguments[elem]
             elif elem == 'w0wa':
                 self.cosmo_arguments['wa_fld'] = self.cosmo_arguments[elem] - self.cosmo_arguments['w0_fld']
+                del self.cosmo_arguments[elem]
+            # EDE stuff by Gen Ye
+            elif elem == 'log10_axion_ac':
+                self.cosmo_arguments['scf_parameters'] = str(self.cosmo_arguments['Theta_i']) + ', 0.0'
+                self.cosmo_arguments.pop('Theta_i', None)
+            elif elem == 'fa':
+                if 'm_a' in self.cosmo_arguments:
+                    m_axi = self.cosmo_arguments['m_a']
+                elif 'lnma' in self.cosmo_arguments:
+                    m_axi = np.exp(self.cosmo_arguments['lnma'])
+                else:
+                    raise ValueError("Could not find axion mass, since none of {m_a,lnma} are defined")
+                if 'ndescf_m_fld' not in self.cosmo_arguments:
+                    self.cosmo_arguments['ndescf_m_fld'] = m_axi
+                f_axi = self.cosmo_arguments['fa']
+                axion_ini = self.cosmo_arguments['Theta_i'] * f_axi
+                self.cosmo_arguments['ndescf_parameters'] = ', '.join(map(str,[f_axi,m_axi,-1,axion_ini,0]))
+                self.cosmo_arguments.pop('Theta_i', None)
+                self.cosmo_arguments.pop('fa', None)
+                self.cosmo_arguments.pop('m_a', None)
+                self.cosmo_arguments.pop('lnma', None)
+            elif elem == 'fa1':
+                if 'm_a1' in self.cosmo_arguments:
+                    m1_axi = self.cosmo_arguments['m_a1']
+                    m2_axi = self.cosmo_arguments['m_a2']
+                elif 'lnma1' in self.cosmo_arguments:
+                    m1_axi = np.exp(self.cosmo_arguments['lnma1'])
+                    m2_axi = np.exp(self.cosmo_arguments['lnma2'])
+                else:
+                    raise ValueError("Could not find axion mass, since none of {m_a,ln(m_a)} are defined")
+                if 'ndescf_m_fld' not in self.cosmo_arguments:
+                    self.cosmo_arguments['ndescf_m_fld'] = ', '.join(map(str,[m1_axi,m2_axi]))
+                f1_axi = self.cosmo_arguments['fa1']
+                f2_axi = self.cosmo_arguments['fa2']
+                axion1_ini = self.cosmo_arguments['Theta_i'] * f1_axi
+                axion2_ini = self.cosmo_arguments['Theta_i'] * f2_axi
+                self.cosmo_arguments['ndescf_parameters'] = ', '.join(map(str,[f1_axi,m1_axi,-1,axion1_ini,0,f2_axi,m2_axi,-1,axion2_ini,0]))
+                self.cosmo_arguments['N_ndescf'] = 2
+                self.cosmo_arguments['ndescf_parameters_size'] = 5
+                self.cosmo_arguments['Omega_ndescf_stQ'] = 1
+                self.cosmo_arguments.pop('Theta_i', None)
+                self.cosmo_arguments.pop('fa1', None)
+                self.cosmo_arguments.pop('fa2', None)
+                self.cosmo_arguments.pop('m_a1', None)
+                self.cosmo_arguments.pop('m_a2', None)
+                self.cosmo_arguments.pop('lnma1', None)
+                self.cosmo_arguments.pop('lnma2', None)
+            elif elem == 'fede':
+                if not self.finder.model_set:
+                    self.finder.set_model(self.cosmo_arguments['ede_model'], self.cosmo_arguments['scf_format'])
+                    self.cosmo_arguments.pop('ede_model', None)
+                    self.cosmo_arguments.pop('scf_format', None)
+                if self.need_cosmo_update:
+                    T0 = self.cosmo_arguments['T_cmb'] if 'T_cmb' in self.cosmo_arguments else 2.7255
+                    omega_m = self.cosmo_arguments['omega_b'] + self.cosmo_arguments['omega_cdm']
+                    H0 = self.cosmo_arguments['H0'] if 'H0' in self.cosmo_arguments else 70 # H0 as derived parameter is only appropriate for phi2n potential, otherwise it is used in shooting
+                    self.finder.set_cosmo_params(omega_m=omega_m, T0=T0, H0=H0)
+                    smg0 = self.cosmo_arguments['smg0'] if 'smg0' in self.cosmo_arguments else 0
+                    smg1 = self.cosmo_arguments['smg1'] if 'smg1' in self.cosmo_arguments else 0
+                    smg2 = self.cosmo_arguments['smg2'] if 'smg2' in self.cosmo_arguments else 0
+                    v0 = self.cosmo_arguments['v0'] if 'v0' in self.cosmo_arguments else 0
+                    v1 = self.cosmo_arguments['v1'] if 'v1' in self.cosmo_arguments else 0
+                    v2 = self.cosmo_arguments['v2'] if 'v2' in self.cosmo_arguments else 0
+                    v3 = self.cosmo_arguments['v3'] if 'v3' in self.cosmo_arguments else 0
+                    self.finder.set_MCMC_params(scf_f=self.cosmo_arguments[elem], ln1plusz_c=self.cosmo_arguments['lnzc'], smg0=smg0,
+                                                smg1=smg1, smg2=smg2, v0=v0, v1=v1, v2=v2, v3=v3)
+                    rlt = self.finder.search()
+                    if rlt == 'skip':
+                        self.skip = True
+                    else:
+                        self.skip = False
+                        if self.finder.fmt == 'ede':
+                            self.cosmo_arguments['scf_parameters'] = rlt
+                        elif self.finder.fmt == 'smg':
+                            self.cosmo_arguments['parameters_smg'] = rlt
+                self.cosmo_arguments.pop(elem, None)
+                self.cosmo_arguments.pop('lnzc', None)
+                self.cosmo_arguments.pop('smg0', None)
+                self.cosmo_arguments.pop('smg1', None)
+                self.cosmo_arguments.pop('smg2', None)
+                self.cosmo_arguments.pop('v0', None)
+                self.cosmo_arguments.pop('v1', None)
+                self.cosmo_arguments.pop('v2', None)
+                self.cosmo_arguments.pop('v3', None)
+            
+            # log tensor to scalar ratio by Gen Ye 
+            elif elem == 'log_10(r)':
+                self.cosmo_arguments['r'] = 10**self.cosmo_arguments[elem]
                 del self.cosmo_arguments[elem]
 
             # Finally, deal with all the parameters ending with __i, where i is

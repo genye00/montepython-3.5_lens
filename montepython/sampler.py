@@ -650,6 +650,9 @@ def accept_step(data):
     for elem in data.get_mcmc_parameters(['derived_lkl']):
         data.mcmc_parameters[elem]['last_accepted'] = \
             data.mcmc_parameters[elem]['current']
+    for elem in data.get_mcmc_parameters(['chi2']): # output chi2 by Gen Ye
+        data.mcmc_parameters[elem]['last_accepted'] = \
+            data.mcmc_parameters[elem]['current']
 
 def check_flat_bound_priors(parameters, names):
     """
@@ -692,10 +695,23 @@ def compute_lkl(cosmo, data):
     """
     from classy import CosmoSevereError, CosmoComputationError
 
+    # skip if EDE shooting failed, by Gen Ye
+    if data.skip:
+        cosmo.struct_cleanup()
+        return data.boundary_loglike
+
     # If the cosmological module has already been called once, and if the
     # cosmological parameters have changed, then clean up, and compute.
     if cosmo.state and data.need_cosmo_update is True:
         cosmo.struct_cleanup()
+
+    # last minute hack: if we are to do relensing, then do not need to do lensing here, by Gen Ye
+    force_relens = False
+    if data.need_lensing_update:
+        data.cosmo_arguments['lensing'] = 'no'
+    elif (data.relensflag and data.jumping_factor == 0) or (data.relensflag and not cosmo.state):
+        data.cosmo_arguments['lensing'] = 'no'
+        force_relens = True
 
     # If the data needs to change, then do a normal call to the cosmological
     # compute function. Note that, even if need_cosmo update is True, this
@@ -763,6 +779,48 @@ def compute_lkl(cosmo, data):
                 raise io_mp.CosmologicalModuleError(
                     "You interrupted execution")
 
+    from time import process_time
+    # Modify Clpp and do relensing if required. by Gen Ye
+    if data.need_lensing_update or force_relens:
+        lnal = np.zeros(len(data.relens_lnode))
+        for i in range(len(data.relens_lnode)):
+            nm = 'lnAL%s'%(i+1)
+            lnal[i] = data.mcmc_parameters[nm]['current']*data.mcmc_parameters[nm]['scale']
+        clpp = cosmo.raw_cl()['pp']
+        al = data.gp_gen.get_func(lnal)
+        clpp *= al[:len(clpp)]
+        # add free lensing clpp as derived by Gen Ye
+        if len(data.relens_loutput) > 0:
+            for i in range(len(data.relens_loutput)):
+                data.derived_lkl['AL_%d'%(i)] = al[data.relens_loutput[i]]
+                data.derived_lkl['CL_%d'%(i)] = clpp[data.relens_loutput[i]]
+        try:
+            # t0 = process_time()
+            cosmo.recompute_lensing(clpp)
+            # t1 = process_time()
+            # print((t1-t0))
+        except CosmoComputationError as failure_message:
+            # could be useful to uncomment for debugging:
+            #np.set_printoptions(precision=30, linewidth=150)
+            print('Relensing failed with cosmo params')
+            print(data.cosmo_arguments)
+            print('Cl_pp')
+            print(clpp)
+            sys.stderr.write(str(failure_message)+'\n')
+            sys.stderr.flush()
+            return data.boundary_loglike
+        except CosmoSevereError as critical_message:
+            print('Relensing failed with cosmo params')
+            print(data.cosmo_arguments)
+            print('Cl_pp')
+            print(clpp)
+            raise io_mp.CosmologicalModuleError(
+                "Something went wrong when calling CLASS relensing" +
+                str(critical_message))
+        except KeyboardInterrupt:
+            raise io_mp.CosmologicalModuleError(
+                "You interrupted execution")
+    
     # For each desired likelihood, compute its value against the theoretical
     # model
     loglike = 0
@@ -771,6 +829,7 @@ def compute_lkl(cosmo, data):
     # imaginary number i.
     flag_wrote_fiducial = 0
 
+    chi2output = data.get_mcmc_parameters(['chi2'])
     for likelihood in dictvalues(data.lkl):
         if likelihood.need_update is True:
             value = likelihood.loglkl(cosmo, data)
@@ -779,14 +838,23 @@ def compute_lkl(cosmo, data):
         # Otherwise, take the existing value
         else:
             value = likelihood.backup_value
+        if likelihood.name in chi2output:
+            data.mcmc_parameters[likelihood.name]['current'] = -value-value # output chi2 for each likelihoods if required by Gen Ye
         if data.command_line.display_each_chi2:
             print("-> for ",likelihood.name,":  loglkl=",value,",  chi2eff=",-2.*value)
         loglike += value
         # In case the fiducial file was written, store this information
         if value == 1j:
             flag_wrote_fiducial += 1
+    # add nuisance prior here, by Gen Ye
+    lkl_np = 0
+    for key, dat in data.nuisance_prior_to_add.items():
+        val = data.mcmc_parameters[key]['current'] * data.mcmc_parameters[key]['scale']
+        lkl_np -= 0.5 * ((val-dat[0])/dat[1])**2
     if data.command_line.display_each_chi2:
         print("-> Total:  loglkl=",loglike,",  chi2eff=",-2.*loglike)
+        print("-> Nuisance priors:  loglkl=",lkl_np,",  chi2eff=",-2.*lkl_np)
+    loglike += lkl_np
 
     # Compute the derived parameters if relevant
     if data.get_mcmc_parameters(['derived']) != []:
@@ -815,6 +883,16 @@ def compute_lkl(cosmo, data):
     for elem in data.get_mcmc_parameters(['derived']):
         data.mcmc_parameters[elem]['current'] /= \
             data.mcmc_parameters[elem]['scale']
+        
+    # scale derived_lkl by Gen Ye
+    for elem in data.get_mcmc_parameters(['derived_lkl']):
+        data.mcmc_parameters[elem]['current'] /= \
+            data.mcmc_parameters[elem]['scale']
+        
+    # scale chi2 by Gen Ye
+    for elem in data.get_mcmc_parameters(['chi2']):
+        data.mcmc_parameters[elem]['current'] /= \
+            data.mcmc_parameters[elem]['scale']
 
     # If fiducial files were created, inform the user, and exit
     if flag_wrote_fiducial > 0:
@@ -835,6 +913,7 @@ def compute_lkl(cosmo, data):
                 "with each other. If everything looks fine, "
                 "you may now start a new run.")
 
+    # print(data.get_mcmc_parameters(['varying']))
     return loglike/data.command_line.temperature
 
 
