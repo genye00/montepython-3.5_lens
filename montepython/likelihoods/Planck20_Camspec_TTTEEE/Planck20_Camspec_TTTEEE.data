@@ -1,3 +1,4 @@
+# Original paper arXiv:2205.10869
 Planck20_Camspec_TTTEEE.dataset_file = os.path.join(data.path['data'], 'planck_2020/CamSpec_NPIPE/CamSpec_NPIPE_12_6_cl.dataset')
 Planck20_Camspec_TTTEEE.use_cache = True
 Planck20_Camspec_TTTEEE.use_cl = ['100x100', '143x143', '217x217', '143x217', 'TE', 'EE']
